@@ -1,0 +1,11 @@
+{
+  "name": "wedding-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "server": "cd server && node index.js",
+    "start": "cd client && npm run build && cd ../server && node index.js"
+  }
+}

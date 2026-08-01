@@ -1,0 +1,131 @@
+.story { background: var(--white); }
+
+.timeline {
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 0; bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, transparent, var(--border), var(--primary-light), var(--border), transparent);
+}
+
+.timeline-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 48px;
+  position: relative;
+  transition: all 0.6s ease;
+}
+
+.timeline-item:last-child { margin-bottom: 0; }
+
+.timeline-item.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.timeline-item:nth-child(odd) { flex-direction: row; }
+.timeline-item:nth-child(even) { flex-direction: row-reverse; }
+
+.timeline-dot {
+  position: absolute;
+  left: 50%;
+  top: 24px;
+  transform: translateX(-50%);
+  width: 16px; height: 16px;
+  background: var(--white);
+  border: 3px solid var(--primary);
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.timeline-date {
+  width: 45%;
+  text-align: right;
+  padding-right: 60px;
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  color: var(--primary);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding-top: 18px;
+}
+
+.timeline-date.even {
+  text-align: left;
+  padding-right: 0;
+  padding-left: 60px;
+}
+
+.timeline-card {
+  width: 45%;
+  padding-left: 60px;
+  background: var(--bg);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.timeline-card.even {
+  padding-left: 0;
+  padding-right: 60px;
+}
+
+.timeline-card-img img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  display: block;
+}
+
+.timeline-card-body {
+  padding: 16px 20px;
+}
+
+.timeline-card-body h4 {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.timeline-card-body p {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .timeline::before { left: 20px; }
+
+  .timeline-item,
+  .timeline-item:nth-child(even) {
+    flex-direction: column;
+    align-items: flex-start;
+    padding-left: 48px;
+  }
+
+  .timeline-dot { left: 20px; top: 20px; }
+
+  .timeline-date,
+  .timeline-date.even {
+    width: 100%;
+    text-align: left;
+    padding: 0 0 10px 0;
+  }
+
+  .timeline-card,
+  .timeline-card.even {
+    width: 100%;
+    padding: 0;
+  }
+}
