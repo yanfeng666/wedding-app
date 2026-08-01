@@ -2,8 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const https = require('https');
 const { createClient } = require('@supabase/supabase-js');
-const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -15,37 +15,44 @@ const supabase = supabaseUrl && supabaseKey
   ? createClient(supabaseUrl, supabaseKey)
   : null;
 
-// 邮件配置
-const transporter = process.env.SMTP_HOST
-  ? nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || '465'),
-    secure: true,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
-  })
-  : null;
-
+// 邮件配置（使用 Resend HTTP API，走 443 端口）
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const NOTIFY_EMAIL = process.env.NOTIFY_EMAIL || '';
 
-// 发送通知邮件
-async function sendNotification(subject, content) {
-  if (!transporter || !NOTIFY_EMAIL) return;
-  try {
-    await transporter.sendMail({
-      from: process.env.SMTP_USER,
-      to: NOTIFY_EMAIL,
-      subject,
-      text: content,
+// 发送通知邮件（通过 Resend HTTP API）
+function sendNotification(subject, content) {
+  if (!RESEND_API_KEY || !NOTIFY_EMAIL) return;
+  const payload = JSON.stringify({
+    from: 'Wedding App <onboarding@resend.dev>',
+    to: [NOTIFY_EMAIL],
+    subject,
+    text: content,
+  });
+  const req = https.request({
+    hostname: 'api.resend.com',
+    path: '/emails',
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(payload),
+    },
+    timeout: 10000,
+  }, (res) => {
+    let body = '';
+    res.on('data', (chunk) => body += chunk);
+    res.on('end', () => {
+      if (res.statusCode === 200) {
+        console.log('✅ 邮件通知已发送:', subject);
+      } else {
+        console.error('发送邮件失败:', res.statusCode, body);
+      }
     });
-  } catch (err) {
-    console.error('发送邮件失败:', err);
-  }
+  });
+  req.on('error', (err) => console.error('发送邮件失败:', err.message));
+  req.on('timeout', () => { req.destroy(); console.error('发送邮件超时'); });
+  req.write(payload);
+  req.end();
 }
 
 // 中间件
@@ -144,8 +151,13 @@ app.post('/api/rsvp', async (req, res) => {
 
 // ========== 数据导出 ==========
 
-app.get('/api/export', async (_req, res) => {
+app.get('/api/export', async (req, res) => {
   try {
+    const exportKey = process.env.EXPORT_KEY || 'wedding2026';
+    if (req.query.key !== exportKey) {
+      return res.status(403).json({ error: '无权访问' });
+    }
+
     let blessings = [];
     let rsvps = [];
 
@@ -185,5 +197,5 @@ app.listen(PORT, () => {
   console.log(`💒 婚礼网站服务已启动: http://localhost:${PORT}`);
   console.log(`📁 静态文件路径: ${clientDistPath}`);
   console.log(supabase ? '✅ Supabase 数据库已连接' : '⚠️ Supabase 未配置');
-  console.log(transporter ? '✅ 邮件通知已配置' : '⚠️ 邮件通知未配置');
+  console.log(RESEND_API_KEY ? '✅ 邮件通知已配置 (Resend API)' : '⚠️ 邮件通知未配置');
 });
