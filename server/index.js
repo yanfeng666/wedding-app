@@ -1,32 +1,47 @@
 const express = require('express');
 const cors = require('cors');
-const fs = require('fs');
 const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
+const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// 数据文件路径
-const BLESSINGS_FILE = path.join(__dirname, 'data', 'blessings.json');
-const RSVP_FILE = path.join(__dirname, 'data', 'rsvp.json');
+// Supabase 配置
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+const supabase = supabaseUrl && supabaseKey
+  ? createClient(supabaseUrl, supabaseKey)
+  : null;
 
-// 确保 data 目录和数据文件存在
-if (!fs.existsSync(path.join(__dirname, 'data'))) {
-  fs.mkdirSync(path.join(__dirname, 'data'));
-}
+// 邮件配置
+const transporter = process.env.SMTP_HOST
+  ? nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT || '465'),
+    secure: true,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  })
+  : null;
 
-function readBlessings() {
+const NOTIFY_EMAIL = process.env.NOTIFY_EMAIL || '';
+
+// 发送通知邮件
+async function sendNotification(subject, content) {
+  if (!transporter || !NOTIFY_EMAIL) return;
   try {
-    if (!fs.existsSync(BLESSINGS_FILE)) return [];
-    const raw = fs.readFileSync(BLESSINGS_FILE, 'utf-8');
-    return JSON.parse(raw);
-  } catch {
-    return [];
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: NOTIFY_EMAIL,
+      subject,
+      text: content,
+    });
+  } catch (err) {
+    console.error('发送邮件失败:', err);
   }
-}
-
-function writeBlessings(data) {
-  fs.writeFileSync(BLESSINGS_FILE, JSON.stringify(data, null, 2), 'utf-8');
 }
 
 // 中间件
@@ -36,10 +51,15 @@ app.use(express.json());
 // ========== API 路由 ==========
 
 // 获取所有祝福
-app.get('/api/blessings', (_req, res) => {
+app.get('/api/blessings', async (_req, res) => {
   try {
-    const blessings = readBlessings();
-    res.json(blessings);
+    if (!supabase) return res.json([]);
+    const { data, error } = await supabase
+      .from('blessings')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    res.json(data);
   } catch (err) {
     console.error('获取祝福失败:', err);
     res.status(500).json({ error: '获取祝福失败' });
@@ -47,23 +67,26 @@ app.get('/api/blessings', (_req, res) => {
 });
 
 // 提交祝福
-app.post('/api/blessings', (req, res) => {
+app.post('/api/blessings', async (req, res) => {
   try {
     const { name, relation, message } = req.body;
     if (!name || !message) {
       return res.status(400).json({ error: '姓名和祝福内容不能为空' });
     }
-    const blessings = readBlessings();
-    const newBlessing = {
-      id: Date.now(),
-      name,
-      relation: relation || '亲友',
-      message,
-      created_at: new Date().toISOString(),
-    };
-    blessings.unshift(newBlessing);
-    writeBlessings(blessings);
-    res.json({ id: newBlessing.id, success: true });
+    if (!supabase) return res.json({ id: Date.now(), success: true });
+
+    const { data, error } = await supabase
+      .from('blessings')
+      .insert([{ name, relation: relation || '亲友', message }])
+      .select();
+    if (error) throw error;
+
+    await sendNotification(
+      '💌 收到新的婚礼祝福',
+      `${name}（${relation || '亲友'}）发送了祝福：\n\n${message}`
+    );
+
+    res.json({ id: data[0].id, success: true });
   } catch (err) {
     console.error('提交祝福失败:', err);
     res.status(500).json({ error: '提交祝福失败' });
@@ -72,25 +95,16 @@ app.post('/api/blessings', (req, res) => {
 
 // ========== RSVP（确认参加） ==========
 
-function readRsvps() {
-  try {
-    if (!fs.existsSync(RSVP_FILE)) return [];
-    const raw = fs.readFileSync(RSVP_FILE, 'utf-8');
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
-}
-
-function writeRsvps(data) {
-  fs.writeFileSync(RSVP_FILE, JSON.stringify(data, null, 2), 'utf-8');
-}
-
 // 获取所有 RSVP
-app.get('/api/rsvp', (_req, res) => {
+app.get('/api/rsvp', async (_req, res) => {
   try {
-    const rsvps = readRsvps();
-    res.json(rsvps);
+    if (!supabase) return res.json([]);
+    const { data, error } = await supabase
+      .from('rsvp')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    res.json(data);
   } catch (err) {
     console.error('获取 RSVP 失败:', err);
     res.status(500).json({ error: '获取 RSVP 失败' });
@@ -98,25 +112,56 @@ app.get('/api/rsvp', (_req, res) => {
 });
 
 // 提交 RSVP
-app.post('/api/rsvp', (req, res) => {
+app.post('/api/rsvp', async (req, res) => {
   try {
     const { name, phone } = req.body;
     if (!name || !name.trim()) {
       return res.status(400).json({ error: '姓名不能为空' });
     }
-    const rsvps = readRsvps();
-    const newRsvp = {
-      id: Date.now(),
-      name: name.trim(),
-      phone: phone ? phone.trim() : '',
-      created_at: new Date().toISOString(),
-    };
-    rsvps.unshift(newRsvp);
-    writeRsvps(rsvps);
-    res.json({ id: newRsvp.id, success: true });
+    if (!supabase) return res.json({ id: Date.now(), success: true });
+
+    const { data, error } = await supabase
+      .from('rsvp')
+      .insert([{ name: name.trim(), phone: phone ? phone.trim() : '' }])
+      .select();
+    if (error) throw error;
+
+    await sendNotification(
+      '🎉 收到新的 RSVP 确认',
+      `${name.trim()} 确认参加婚礼！\n联系电话：${phone ? phone.trim() : '未提供'}`
+    );
+
+    res.json({ id: data[0].id, success: true });
   } catch (err) {
     console.error('提交 RSVP 失败:', err);
     res.status(500).json({ error: '提交 RSVP 失败' });
+  }
+});
+
+// ========== 数据导出 ==========
+
+app.get('/api/export', async (_req, res) => {
+  try {
+    let blessings = [];
+    let rsvps = [];
+
+    if (supabase) {
+      const { data: bData } = await supabase.from('blessings').select('*').order('created_at', { ascending: false });
+      blessings = bData || [];
+      const { data: rData } = await supabase.from('rsvp').select('*').order('created_at', { ascending: false });
+      rsvps = rData || [];
+    }
+
+    res.setHeader('Content-Disposition', 'attachment; filename="wedding-data.json"');
+    res.json({
+      export_time: new Date().toISOString(),
+      blessings,
+      rsvps,
+      totals: { blessings: blessings.length, rsvps: rsvps.length },
+    });
+  } catch (err) {
+    console.error('导出数据失败:', err);
+    res.status(500).json({ error: '导出数据失败' });
   }
 });
 
@@ -135,4 +180,6 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`💒 婚礼网站服务已启动: http://localhost:${PORT}`);
   console.log(`📁 静态文件路径: ${clientDistPath}`);
+  console.log(supabase ? '✅ Supabase 数据库已连接' : '⚠️ Supabase 未配置');
+  console.log(transporter ? '✅ 邮件通知已配置' : '⚠️ 邮件通知未配置');
 });
