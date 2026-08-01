@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -24,6 +25,9 @@ const transporter = process.env.SMTP_HOST
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
   })
   : null;
 
@@ -81,7 +85,7 @@ app.post('/api/blessings', async (req, res) => {
       .select();
     if (error) throw error;
 
-    await sendNotification(
+    sendNotification(
       '💌 收到新的婚礼祝福',
       `${name}（${relation || '亲友'}）发送了祝福：\n\n${message}`
     );
@@ -126,7 +130,7 @@ app.post('/api/rsvp', async (req, res) => {
       .select();
     if (error) throw error;
 
-    await sendNotification(
+    sendNotification(
       '🎉 收到新的 RSVP 确认',
       `${name.trim()} 确认参加婚礼！\n联系电话：${phone ? phone.trim() : '未提供'}`
     );
