@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Spin } from 'antd';
 import Login from './Login';
 import Dashboard from './Dashboard';
 import './App.css';
@@ -20,7 +21,7 @@ export default function App() {
   }, [token]);
 
   if (checking) {
-    return <div className="loading-screen">验证中...</div>;
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><Spin size="large" /></div>;
   }
 
   if (!token) {

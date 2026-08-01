@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Card, Button, Form, Input } from 'antd';
+import ImageUpload from '../components/ImageUpload';
 
 const BACKGROUNDS = [
   { key: 'hero_bg', label: '首页背景图', desc: 'Hero 区域的背景图' },
@@ -15,43 +17,40 @@ export default function BackgroundSection({ config, onSave }) {
       return acc;
     }, {})
   );
+  const [saving, setSaving] = useState(false);
 
   const handleChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = () => {
+    setSaving(true);
     onSave(form);
+    setSaving(false);
   };
 
   return (
     <div>
-      <div className="page-header">
-        <h2>背景图片</h2>
-        <p>为各个页面区域设置背景图片（留空则使用默认渐变背景）</p>
-      </div>
-      <form onSubmit={handleSubmit}>
-        {BACKGROUNDS.map(bg => (
-          <div className="card" key={bg.key}>
-            <h3>{bg.label}</h3>
-            <p style={{ color: '#999', fontSize: 13, marginBottom: 12 }}>{bg.desc}</p>
-            <div className="form-group">
-              <label>图片 URL</label>
-              <input
-                type="url"
+      {BACKGROUNDS.map(bg => (
+        <Card
+          key={bg.key}
+          title={bg.label}
+          style={{ marginBottom: 16 }}
+          extra={<span style={{ color: '#999', fontSize: 13 }}>{bg.desc}</span>}
+        >
+          <Form layout="vertical">
+            <Form.Item label="背景图片">
+              <ImageUpload
                 value={form[bg.key]}
-                onChange={(e) => handleChange(bg.key, e.target.value)}
-                placeholder="https://example.com/image.jpg"
+                onChange={(val) => handleChange(bg.key, val)}
               />
-            </div>
-            {form[bg.key] && (
-              <img src={form[bg.key]} alt={bg.label} className="image-preview" />
-            )}
-          </div>
-        ))}
-        <button type="submit" className="btn btn-primary btn-save">保存背景配置</button>
-      </form>
+            </Form.Item>
+          </Form>
+        </Card>
+      ))}
+      <Button type="primary" size="large" onClick={handleSubmit} loading={saving}>
+        保存背景配置
+      </Button>
     </div>
   );
 }

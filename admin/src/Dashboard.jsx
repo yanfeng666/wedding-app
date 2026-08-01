@@ -1,4 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Layout, Menu, Spin, message } from 'antd';
+import {
+  SettingOutlined, PictureOutlined, BookOutlined,
+  CameraOutlined, ProfileOutlined, MailOutlined,
+  MessageOutlined, ScheduleOutlined, LogoutOutlined,
+} from '@ant-design/icons';
 import GeneralSection from './sections/GeneralSection';
 import BackgroundSection from './sections/BackgroundSection';
 import StorySection from './sections/StorySection';
@@ -8,26 +14,27 @@ import InvitationSection from './sections/InvitationSection';
 import BlessingsSection from './sections/BlessingsSection';
 import RsvpSection from './sections/RsvpSection';
 
-const TABS = [
-  { id: 'general', label: '基本配置', icon: '⚙️' },
-  { id: 'background', label: '背景图片', icon: '🖼️' },
-  { id: 'story', label: '我们的故事', icon: '📖' },
-  { id: 'gallery', label: '婚礼相册', icon: '📸' },
-  { id: 'info', label: '婚礼信息', icon: '📋' },
-  { id: 'invitation', label: '诚挚邀请', icon: '✉️' },
-  { id: 'blessings', label: '留言管理', icon: '💬' },
-  { id: 'rsvp', label: 'RSVP管理', icon: '📝' },
+const { Sider, Content, Header } = Layout;
+
+const MENU_ITEMS = [
+  { key: 'general', icon: <SettingOutlined />, label: '基本配置' },
+  { key: 'background', icon: <PictureOutlined />, label: '背景图片' },
+  { key: 'story', icon: <BookOutlined />, label: '我们的故事' },
+  { key: 'gallery', icon: <CameraOutlined />, label: '婚礼相册' },
+  { key: 'info', icon: <ProfileOutlined />, label: '婚礼信息' },
+  { key: 'invitation', icon: <MailOutlined />, label: '诚挚邀请' },
+  { key: 'blessings', icon: <MessageOutlined />, label: '留言管理' },
+  { key: 'rsvp', icon: <ScheduleOutlined />, label: 'RSVP管理' },
 ];
 
 export default function Dashboard({ token, onLogout }) {
   const [activeTab, setActiveTab] = useState('general');
   const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState(null);
+  const [messageApi, contextHolder] = message.useMessage();
 
   const showToast = (msg, type = 'success') => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3000);
+    messageApi[type](msg);
   };
 
   const fetchConfig = useCallback(async () => {
@@ -71,61 +78,52 @@ export default function Dashboard({ token, onLogout }) {
     }
   };
 
-  if (loading) {
-    return <div className="loading">加载配置中...</div>;
-  }
+  const renderContent = () => {
+    if (loading) return <div style={{ textAlign: 'center', paddingTop: 100 }}><Spin size="large" /></div>;
+    switch (activeTab) {
+      case 'general': return config && <GeneralSection config={config} onSave={saveConfig} />;
+      case 'background': return config && <BackgroundSection config={config} onSave={saveConfig} />;
+      case 'story': return config && <StorySection config={config} onSave={saveConfig} />;
+      case 'gallery': return config && <GallerySection config={config} onSave={saveConfig} />;
+      case 'info': return config && <InfoSection config={config} onSave={saveConfig} />;
+      case 'invitation': return config && <InvitationSection config={config} onSave={saveConfig} />;
+      case 'blessings': return <BlessingsSection token={token} showToast={showToast} />;
+      case 'rsvp': return <RsvpSection token={token} showToast={showToast} />;
+      default: return null;
+    }
+  };
 
   return (
-    <div className="dashboard">
-      <aside className="sidebar">
-        <div className="sidebar-logo">💒 婚礼管理端</div>
-        <nav>
-          {TABS.map(tab => (
-            <button
-              key={tab.id}
-              className={activeTab === tab.id ? 'active' : ''}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              <span>{tab.icon}</span>
-              <span>{tab.label}</span>
-            </button>
-          ))}
-        </nav>
-        <button className="logout-btn" onClick={onLogout}>
-          退出登录
-        </button>
-      </aside>
-
-      <main className="main-content">
-        {activeTab === 'general' && config && (
-          <GeneralSection config={config} onSave={saveConfig} />
-        )}
-        {activeTab === 'background' && config && (
-          <BackgroundSection config={config} onSave={saveConfig} />
-        )}
-        {activeTab === 'story' && config && (
-          <StorySection config={config} onSave={saveConfig} />
-        )}
-        {activeTab === 'gallery' && config && (
-          <GallerySection config={config} onSave={saveConfig} />
-        )}
-        {activeTab === 'info' && config && (
-          <InfoSection config={config} onSave={saveConfig} />
-        )}
-        {activeTab === 'invitation' && config && (
-          <InvitationSection config={config} onSave={saveConfig} />
-        )}
-        {activeTab === 'blessings' && (
-          <BlessingsSection token={token} showToast={showToast} />
-        )}
-        {activeTab === 'rsvp' && (
-          <RsvpSection token={token} />
-        )}
-      </main>
-
-      {toast && (
-        <div className={`toast ${toast.type}`}>{toast.msg}</div>
-      )}
-    </div>
+    <Layout style={{ minHeight: '100vh' }}>
+      {contextHolder}
+      <Sider breakpoint="lg" collapsedWidth="0" style={{ background: '#fff' }}>
+        <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 600, color: '#d4888a', borderBottom: '1px solid #f0f0f0' }}>
+          💒 婚礼管理端
+        </div>
+        <Menu
+          mode="inline"
+          selectedKeys={[activeTab]}
+          items={MENU_ITEMS}
+          onClick={({ key }) => setActiveTab(key)}
+          style={{ borderRight: 0 }}
+        />
+        <div style={{ position: 'absolute', bottom: 0, width: '100%', padding: 16, borderTop: '1px solid #f0f0f0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', color: '#666' }} onClick={onLogout}>
+            <LogoutOutlined />
+            <span>退出登录</span>
+          </div>
+        </div>
+      </Sider>
+      <Layout>
+        <Header style={{ background: '#fff', padding: '0 24px', borderBottom: '1px solid #f0f0f0' }}>
+          <h2 style={{ margin: 0, fontSize: 18, lineHeight: '64px' }}>
+            {MENU_ITEMS.find(m => m.key === activeTab)?.label}
+          </h2>
+        </Header>
+        <Content style={{ margin: 24, padding: 24, background: '#fff', borderRadius: 12, minHeight: 360 }}>
+          {renderContent()}
+        </Content>
+      </Layout>
+    </Layout>
   );
 }

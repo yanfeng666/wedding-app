@@ -1,64 +1,61 @@
 import { useState } from 'react';
+import { Card, Form, Input, Button, Typography, message } from 'antd';
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
+
+const { Title, Text } = Typography;
 
 export default function Login({ onLogin }) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!username.trim() || !password.trim()) {
-      setError('请输入用户名和密码');
-      return;
-    }
-    setError('');
+  const handleSubmit = async (values) => {
     setLoading(true);
     try {
       const res = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username.trim(), password }),
+        body: JSON.stringify({ username: values.username.trim(), password: values.password }),
       });
       const data = await res.json();
       if (res.ok && data.token) {
         localStorage.setItem('admin_token', data.token);
         onLogin(data.token);
       } else {
-        setError(data.error || '登录失败');
+        message.error(data.error || '登录失败');
       }
     } catch {
-      setError('网络错误，请重试');
+      message.error('网络错误，请重试');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="login-page">
-      <div className="login-card">
-        <h1>💒 婚礼管理端</h1>
-        <p className="subtitle">请登录以管理婚礼网站</p>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder="用户名"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            autoFocus
-          />
-          <input
-            type="password"
-            placeholder="密码"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          {error && <div className="login-error">{error}</div>}
-          <button type="submit" disabled={loading}>
-            {loading ? '登录中...' : '登录'}
-          </button>
-        </form>
-      </div>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    }}>
+      <Card style={{ width: 400, borderRadius: 16, boxShadow: '0 8px 32px rgba(0,0,0,0.15)' }}>
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <Title level={3} style={{ margin: 0, color: '#d4888a' }}>💒 婚礼管理端</Title>
+          <Text type="secondary">请登录以管理婚礼网站</Text>
+        </div>
+        <Form onFinish={handleSubmit} size="large">
+          <Form.Item name="username" rules={[{ required: true, message: '请输入用户名' }]}>
+            <Input prefix={<UserOutlined />} placeholder="用户名" autoFocus />
+          </Form.Item>
+          <Form.Item name="password" rules={[{ required: true, message: '请输入密码' }]}>
+            <Input.Password prefix={<LockOutlined />} placeholder="密码" />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" loading={loading} block>
+              登录
+            </Button>
+          </Form.Item>
+        </Form>
+      </Card>
     </div>
   );
 }

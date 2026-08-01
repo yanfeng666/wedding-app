@@ -1,9 +1,13 @@
 import { useState } from 'react';
+import { Card, Button, Input, Space, Empty } from 'antd';
+import { PlusOutlined, DeleteOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import ImageUpload from '../components/ImageUpload';
 
 export default function StorySection({ config, onSave }) {
   const [items, setItems] = useState(
     config.story_items ? [...config.story_items] : []
   );
+  const [saving, setSaving] = useState(false);
 
   const updateItem = (index, field, value) => {
     setItems(prev => {
@@ -31,72 +35,70 @@ export default function StorySection({ config, onSave }) {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = () => {
+    setSaving(true);
     onSave({ story_items: items });
+    setSaving(false);
   };
 
   return (
     <div>
-      <div className="page-header">
-        <h2>我们的故事</h2>
-        <p>管理恋爱时间线上的各个故事节点</p>
-      </div>
-      <form onSubmit={handleSubmit}>
-        {items.map((item, i) => (
-          <div className="list-item" key={i}>
-            <div className="list-item-fields">
-              <div className="form-row">
-                <div className="form-group">
-                  <label>日期</label>
-                  <input
-                    type="text"
-                    value={item.date || ''}
-                    onChange={(e) => updateItem(i, 'date', e.target.value)}
-                    placeholder="如：2021年3月"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>标题</label>
-                  <input
-                    type="text"
-                    value={item.title || ''}
-                    onChange={(e) => updateItem(i, 'title', e.target.value)}
-                    placeholder="如：初次相遇"
-                  />
-                </div>
-              </div>
-              <div className="form-group">
-                <label>描述</label>
-                <textarea
-                  value={item.desc || ''}
-                  onChange={(e) => updateItem(i, 'desc', e.target.value)}
-                  placeholder="故事描述..."
-                />
-              </div>
-              <div className="form-group">
-                <label>图片 URL</label>
-                <input
-                  type="url"
-                  value={item.img || ''}
-                  onChange={(e) => updateItem(i, 'img', e.target.value)}
-                  placeholder="https://..."
-                />
-                {item.img && <img src={item.img} alt="" className="image-preview" />}
-              </div>
-            </div>
-            <div className="list-item-actions">
-              <button type="button" className="btn btn-sm btn-primary" onClick={() => moveItem(i, -1)} disabled={i === 0}>↑</button>
-              <button type="button" className="btn btn-sm btn-primary" onClick={() => moveItem(i, 1)} disabled={i === items.length - 1}>↓</button>
-              <button type="button" className="btn btn-sm btn-danger" onClick={() => removeItem(i)}>删除</button>
-            </div>
-          </div>
-        ))}
-        <button type="button" className="add-btn" onClick={addItem}>+ 添加故事</button>
-        <div style={{ marginTop: 16 }}>
-          <button type="submit" className="btn btn-primary btn-save">保存故事配置</button>
-        </div>
-      </form>
+      {items.length === 0 && (
+        <Empty description="暂无故事" style={{ marginBottom: 16 }}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={addItem}>添加故事</Button>
+        </Empty>
+      )}
+      {items.map((item, i) => (
+        <Card
+          key={i}
+          style={{ marginBottom: 16 }}
+          title={`故事 ${i + 1}`}
+          extra={
+            <Space>
+              <Button size="small" icon={<ArrowUpOutlined />} disabled={i === 0} onClick={() => moveItem(i, -1)} />
+              <Button size="small" icon={<ArrowDownOutlined />} disabled={i === items.length - 1} onClick={() => moveItem(i, 1)} />
+              <Button size="small" danger icon={<DeleteOutlined />} onClick={() => removeItem(i)} />
+            </Space>
+          }
+        >
+          <Space.Compact style={{ width: '100%', marginBottom: 12 }}>
+            <Input
+              style={{ width: '40%', marginRight: 8 }}
+              placeholder="日期，如：2021年3月"
+              value={item.date || ''}
+              onChange={(e) => updateItem(i, 'date', e.target.value)}
+            />
+            <Input
+              style={{ width: '60%' }}
+              placeholder="标题，如：初次相遇"
+              value={item.title || ''}
+              onChange={(e) => updateItem(i, 'title', e.target.value)}
+            />
+          </Space.Compact>
+          <Input.TextArea
+            style={{ marginBottom: 12 }}
+            placeholder="故事描述..."
+            rows={3}
+            value={item.desc || ''}
+            onChange={(e) => updateItem(i, 'desc', e.target.value)}
+          />
+          <label style={{ fontSize: 14, color: '#666', display: 'block', marginBottom: 6 }}>故事图片</label>
+          <ImageUpload
+            value={item.img || ''}
+            onChange={(val) => updateItem(i, 'img', val)}
+          />
+        </Card>
+      ))}
+      {items.length > 0 && (
+        <>
+          <Button type="dashed" icon={<PlusOutlined />} onClick={addItem} block style={{ marginBottom: 16 }}>
+            添加故事
+          </Button>
+          <Button type="primary" size="large" onClick={handleSubmit} loading={saving}>
+            保存故事配置
+          </Button>
+        </>
+      )}
     </div>
   );
 }

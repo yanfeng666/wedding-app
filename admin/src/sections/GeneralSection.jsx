@@ -1,102 +1,73 @@
 import { useState } from 'react';
+import { Form, Input, Button, Card, DatePicker, Space, Typography } from 'antd';
+import dayjs from 'dayjs';
+
+const { Text } = Typography;
 
 export default function GeneralSection({ config, onSave }) {
-  const [form, setForm] = useState({
-    groom_name: config.groom_name || '',
-    bride_name: config.bride_name || '',
-    wedding_date: config.wedding_date || '',
-    wedding_date_display: config.wedding_date_display || '',
-    navbar_logo: config.navbar_logo || '',
-    footer_quote: config.footer_quote || '',
-  });
+  const [form] = Form.useForm();
+  const [saving, setSaving] = useState(false);
 
-  const handleChange = (field, value) => {
-    setForm(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave(form);
+  const handleSubmit = async (values) => {
+    setSaving(true);
+    onSave({
+      ...values,
+      wedding_date: values.wedding_date ? values.wedding_date.format('YYYY-MM-DDTHH:mm:ss') : '',
+    });
+    setSaving(false);
   };
 
   return (
-    <div>
-      <div className="page-header">
-        <h2>基本配置</h2>
-        <p>设置新郎新娘姓名、婚礼日期、导航栏标题和页脚文案</p>
-      </div>
-      <form onSubmit={handleSubmit}>
-        <div className="card">
-          <h3>新人姓名</h3>
-          <div className="form-row">
-            <div className="form-group">
-              <label>新郎姓名</label>
-              <input
-                type="text"
-                value={form.groom_name}
-                onChange={(e) => handleChange('groom_name', e.target.value)}
-                placeholder="如：张三"
-              />
-            </div>
-            <div className="form-group">
-              <label>新娘姓名</label>
-              <input
-                type="text"
-                value={form.bride_name}
-                onChange={(e) => handleChange('bride_name', e.target.value)}
-                placeholder="如：李四"
-              />
-            </div>
-          </div>
-        </div>
+    <Form
+      form={form}
+      layout="vertical"
+      onFinish={handleSubmit}
+      initialValues={{
+        groom_name: config.groom_name || '',
+        bride_name: config.bride_name || '',
+        wedding_date: config.wedding_date ? dayjs(config.wedding_date) : null,
+        wedding_date_display: config.wedding_date_display || '',
+        navbar_logo: config.navbar_logo || '',
+        footer_quote: config.footer_quote || '',
+      }}
+    >
+      <Card title="新人姓名" style={{ marginBottom: 16 }}>
+        <Space.Compact style={{ width: '100%' }}>
+          <Form.Item name="groom_name" label="新郎姓名" style={{ width: '50%', paddingRight: 8 }}>
+            <Input placeholder="如：张三" />
+          </Form.Item>
+          <Form.Item name="bride_name" label="新娘姓名" style={{ width: '50%' }}>
+            <Input placeholder="如：李四" />
+          </Form.Item>
+        </Space.Compact>
+      </Card>
 
-        <div className="card">
-          <h3>婚礼日期</h3>
-          <div className="form-group">
-            <label>婚礼日期时间（用于倒计时）</label>
-            <input
-              type="text"
-              value={form.wedding_date}
-              onChange={(e) => handleChange('wedding_date', e.target.value)}
-              placeholder="如：2026-10-01T18:08:00"
-            />
-            <small style={{ color: '#999', fontSize: 12 }}>格式：YYYY-MM-DDTHH:mm:ss</small>
-          </div>
-          <div className="form-group">
-            <label>日期显示文案</label>
-            <input
-              type="text"
-              value={form.wedding_date_display}
-              onChange={(e) => handleChange('wedding_date_display', e.target.value)}
-              placeholder="如：2026年10月1日 · 星期四"
-            />
-          </div>
-        </div>
+      <Card title="婚礼日期" style={{ marginBottom: 16 }}>
+        <Form.Item name="wedding_date" label="婚礼日期时间（用于倒计时）">
+          <DatePicker
+            showTime
+            format="YYYY-MM-DD HH:mm:ss"
+            style={{ width: '100%' }}
+            placeholder="选择婚礼日期和时间"
+          />
+        </Form.Item>
+        <Form.Item name="wedding_date_display" label="日期显示文案">
+          <Input placeholder="如：2026年10月1日 · 星期四" />
+        </Form.Item>
+      </Card>
 
-        <div className="card">
-          <h3>界面文案</h3>
-          <div className="form-group">
-            <label>导航栏标题</label>
-            <input
-              type="text"
-              value={form.navbar_logo}
-              onChange={(e) => handleChange('navbar_logo', e.target.value)}
-              placeholder="如：我们结婚啦"
-            />
-          </div>
-          <div className="form-group">
-            <label>页脚寄语</label>
-            <input
-              type="text"
-              value={form.footer_quote}
-              onChange={(e) => handleChange('footer_quote', e.target.value)}
-              placeholder="如：执子之手，与子偕老"
-            />
-          </div>
-        </div>
+      <Card title="界面文案" style={{ marginBottom: 16 }}>
+        <Form.Item name="navbar_logo" label="导航栏标题">
+          <Input placeholder="如：我们结婚啦" />
+        </Form.Item>
+        <Form.Item name="footer_quote" label="页脚寄语">
+          <Input placeholder="如：执子之手，与子偕老" />
+        </Form.Item>
+      </Card>
 
-        <button type="submit" className="btn btn-primary btn-save">保存配置</button>
-      </form>
-    </div>
+      <Button type="primary" htmlType="submit" loading={saving} size="large">
+        保存配置
+      </Button>
+    </Form>
   );
 }

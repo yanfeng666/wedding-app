@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Card, Table, Tag, Button, Space, Segmented, Popconfirm, Statistic, Row, Col, Spin } from 'antd';
+import { CheckOutlined, CloseOutlined, DeleteOutlined, ClockCircleOutlined } from '@ant-design/icons';
 
 export default function BlessingsSection({ token, showToast }) {
   const [blessings, setBlessings] = useState([]);
@@ -35,9 +37,7 @@ export default function BlessingsSection({ token, showToast }) {
         body: JSON.stringify({ status }),
       });
       if (!res.ok) throw new Error('操作失败');
-      setBlessings(prev =>
-        prev.map(b => b.id === id ? { ...b, status } : b)
-      );
+      setBlessings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
       showToast(status === 'approved' ? '已通过' : status === 'rejected' ? '已拒绝' : '已设为待审核');
     } catch {
       showToast('操作失败', 'error');
@@ -45,7 +45,6 @@ export default function BlessingsSection({ token, showToast }) {
   };
 
   const deleteBlessing = async (id) => {
-    if (!confirm('确定要删除这条祝福吗？')) return;
     try {
       const res = await fetch(`/api/admin/blessings/${id}`, {
         method: 'DELETE',
@@ -70,95 +69,114 @@ export default function BlessingsSection({ token, showToast }) {
     rejected: blessings.filter(b => b.status === 'rejected').length,
   };
 
-  if (loading) return <div className="loading">加载中...</div>;
+  const statusTag = (status) => {
+    const s = status || 'approved';
+    const config = {
+      approved: { color: 'green', text: '已通过' },
+      pending: { color: 'orange', text: '待审核' },
+      rejected: { color: 'red', text: '已拒绝' },
+    };
+    const c = config[s] || config.approved;
+    return <Tag color={c.color}>{c.text}</Tag>;
+  };
+
+  const columns = [
+    {
+      title: '姓名',
+      dataIndex: 'name',
+      key: 'name',
+      width: 100,
+    },
+    {
+      title: '关系',
+      dataIndex: 'relation',
+      key: 'relation',
+      width: 80,
+      render: (v) => v || '亲友',
+    },
+    {
+      title: '留言',
+      dataIndex: 'message',
+      key: 'message',
+      ellipsis: true,
+    },
+    {
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
+      width: 90,
+      render: statusTag,
+    },
+    {
+      title: '时间',
+      dataIndex: 'created_at',
+      key: 'created_at',
+      width: 160,
+      render: (v) => new Date(v).toLocaleString('zh-CN'),
+    },
+    {
+      title: '操作',
+      key: 'actions',
+      width: 240,
+      render: (_, record) => (
+        <Space>
+          {record.status !== 'approved' && (
+            <Button size="small" type="primary" icon={<CheckOutlined />} onClick={() => updateStatus(record.id, 'approved')}>
+              通过
+            </Button>
+          )}
+          {record.status !== 'rejected' && (
+            <Button size="small" icon={<CloseOutlined />} onClick={() => updateStatus(record.id, 'rejected')}>
+              拒绝
+            </Button>
+          )}
+          <Popconfirm title="确定删除？" onConfirm={() => deleteBlessing(record.id)}>
+            <Button size="small" danger icon={<DeleteOutlined />}>删除</Button>
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
+
+  if (loading) return <div style={{ textAlign: 'center', paddingTop: 100 }}><Spin size="large" /></div>;
 
   return (
     <div>
-      <div className="page-header">
-        <h2>留言管理</h2>
-        <p>审核和管理访客提交的祝福留言</p>
-      </div>
+      <Row gutter={16} style={{ marginBottom: 16 }}>
+        <Col span={6}>
+          <Card><Statistic title="总留言数" value={stats.total} /></Card>
+        </Col>
+        <Col span={6}>
+          <Card><Statistic title="已通过" value={stats.approved} valueStyle={{ color: '#52c41a' }} /></Card>
+        </Col>
+        <Col span={6}>
+          <Card><Statistic title="待审核" value={stats.pending} valueStyle={{ color: '#faad14' }} /></Card>
+        </Col>
+        <Col span={6}>
+          <Card><Statistic title="已拒绝" value={stats.rejected} valueStyle={{ color: '#ff4d4f' }} /></Card>
+        </Col>
+      </Row>
 
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="number">{stats.total}</div>
-          <div className="label">总留言数</div>
-        </div>
-        <div className="stat-card">
-          <div className="number" style={{ color: '#27ae60' }}>{stats.approved}</div>
-          <div className="label">已通过</div>
-        </div>
-        <div className="stat-card">
-          <div className="number" style={{ color: '#f39c12' }}>{stats.pending}</div>
-          <div className="label">待审核</div>
-        </div>
-        <div className="stat-card">
-          <div className="number" style={{ color: '#e74c3c' }}>{stats.rejected}</div>
-          <div className="label">已拒绝</div>
-        </div>
-      </div>
-
-      <div className="card">
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-          {[
-            { id: 'all', label: '全部' },
-            { id: 'approved', label: '已通过' },
-            { id: 'pending', label: '待审核' },
-            { id: 'rejected', label: '已拒绝' },
-          ].map(tab => (
-            <button
-              key={tab.id}
-              className={`btn btn-sm ${filter === tab.id ? 'btn-primary' : ''}`}
-              style={filter === tab.id ? {} : { background: '#f0f0f0', color: '#666' }}
-              onClick={() => setFilter(tab.id)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {filtered.length === 0 ? (
-          <div className="loading">暂无留言</div>
-        ) : (
-          filtered.map(b => (
-            <div key={b.id} className={`blessing-card status-${b.status || 'approved'}`}>
-              <div className="header">
-                <div>
-                  <span className="name">{b.name}</span>
-                  <span className="meta"> · {b.relation || '亲友'}</span>
-                </div>
-                <span className={`status-badge ${b.status || 'approved'}`}>
-                  {b.status === 'pending' ? '待审核' : b.status === 'rejected' ? '已拒绝' : '已通过'}
-                </span>
-              </div>
-              <div className="meta">
-                {new Date(b.created_at).toLocaleString('zh-CN')}
-              </div>
-              <div className="message">{b.message}</div>
-              <div className="actions">
-                {b.status !== 'approved' && (
-                  <button className="btn btn-sm btn-success" onClick={() => updateStatus(b.id, 'approved')}>
-                    通过
-                  </button>
-                )}
-                {b.status !== 'rejected' && (
-                  <button className="btn btn-sm btn-warning" onClick={() => updateStatus(b.id, 'rejected')}>
-                    拒绝
-                  </button>
-                )}
-                {b.status !== 'pending' && (
-                  <button className="btn btn-sm btn-primary" style={{ background: '#999' }} onClick={() => updateStatus(b.id, 'pending')}>
-                    设为待审核
-                  </button>
-                )}
-                <button className="btn btn-sm btn-danger" onClick={() => deleteBlessing(b.id)}>
-                  删除
-                </button>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+      <Card>
+        <Segmented
+          value={filter}
+          onChange={setFilter}
+          options={[
+            { label: '全部', value: 'all' },
+            { label: '已通过', value: 'approved' },
+            { label: '待审核', value: 'pending' },
+            { label: '已拒绝', value: 'rejected' },
+          ]}
+          style={{ marginBottom: 16 }}
+        />
+        <Table
+          dataSource={filtered}
+          columns={columns}
+          rowKey="id"
+          pagination={{ pageSize: 10 }}
+          scroll={{ x: 800 }}
+        />
+      </Card>
     </div>
   );
 }

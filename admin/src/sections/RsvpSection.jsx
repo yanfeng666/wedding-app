@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Card, Table, Button, Popconfirm, Statistic, Row, Col, Spin, Space } from 'antd';
+import { DeleteOutlined } from '@ant-design/icons';
 
-export default function RsvpSection({ token }) {
+export default function RsvpSection({ token, showToast }) {
   const [rsvps, setRsvps] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -13,58 +15,81 @@ export default function RsvpSection({ token }) {
       const data = await res.json();
       setRsvps(data);
     } catch {
-      console.error('获取 RSVP 失败');
+      showToast('获取 RSVP 失败', 'error');
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, showToast]);
 
   useEffect(() => {
     fetchRsvps();
   }, [fetchRsvps]);
 
-  if (loading) return <div className="loading">加载中...</div>;
+  const deleteRsvp = async (id) => {
+    try {
+      const res = await fetch(`/api/admin/rsvps/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('删除失败');
+      setRsvps(prev => prev.filter(r => r.id !== id));
+      showToast('已删除');
+    } catch {
+      showToast('删除失败', 'error');
+    }
+  };
+
+  const columns = [
+    {
+      title: '姓名',
+      dataIndex: 'name',
+      key: 'name',
+      width: 120,
+    },
+    {
+      title: '电话',
+      dataIndex: 'phone',
+      key: 'phone',
+      width: 150,
+      render: (v) => v || '未提供',
+    },
+    {
+      title: '提交时间',
+      dataIndex: 'created_at',
+      key: 'created_at',
+      width: 180,
+      render: (v) => new Date(v).toLocaleString('zh-CN'),
+    },
+    {
+      title: '操作',
+      key: 'actions',
+      width: 100,
+      render: (_, record) => (
+        <Popconfirm title="确定删除此 RSVP？" onConfirm={() => deleteRsvp(record.id)}>
+          <Button size="small" danger icon={<DeleteOutlined />}>删除</Button>
+        </Popconfirm>
+      ),
+    },
+  ];
+
+  if (loading) return <div style={{ textAlign: 'center', paddingTop: 100 }}><Spin size="large" /></div>;
 
   return (
     <div>
-      <div className="page-header">
-        <h2>RSVP 管理</h2>
-        <p>查看已确认参加婚礼的嘉宾名单</p>
-      </div>
+      <Row gutter={16} style={{ marginBottom: 16 }}>
+        <Col span={8}>
+          <Card><Statistic title="确认人数" value={rsvps.length} /></Card>
+        </Col>
+      </Row>
 
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="number">{rsvps.length}</div>
-          <div className="label">确认人数</div>
-        </div>
-      </div>
-
-      <div className="card">
-        {rsvps.length === 0 ? (
-          <div className="loading">暂无 RSVP 记录</div>
-        ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid #f0f0f0' }}>
-                <th style={{ textAlign: 'left', padding: '12px 8px', fontSize: 14, color: '#666' }}>姓名</th>
-                <th style={{ textAlign: 'left', padding: '12px 8px', fontSize: 14, color: '#666' }}>电话</th>
-                <th style={{ textAlign: 'left', padding: '12px 8px', fontSize: 14, color: '#666' }}>时间</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rsvps.map(r => (
-                <tr key={r.id} style={{ borderBottom: '1px solid #f5f5f5' }}>
-                  <td style={{ padding: '12px 8px', fontSize: 14, fontWeight: 500 }}>{r.name}</td>
-                  <td style={{ padding: '12px 8px', fontSize: 14, color: '#666' }}>{r.phone || '未提供'}</td>
-                  <td style={{ padding: '12px 8px', fontSize: 13, color: '#999' }}>
-                    {new Date(r.created_at).toLocaleString('zh-CN')}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      <Card>
+        <Table
+          dataSource={rsvps}
+          columns={columns}
+          rowKey="id"
+          pagination={{ pageSize: 10 }}
+        />
+      </Card>
     </div>
   );
 }

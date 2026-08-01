@@ -458,6 +458,18 @@ app.get('/api/admin/rsvps', requireAdmin, async (_req, res) => {
   }
 });
 
+app.delete('/api/admin/rsvps/:id', requireAdmin, async (req, res) => {
+  try {
+    if (!supabase) return res.json({ success: true });
+    const { error } = await supabase.from('rsvp').delete().eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
+    console.error('删除 RSVP 失败:', err);
+    res.status(500).json({ error: '删除失败' });
+  }
+});
+
 // ========== 静态文件服务 ==========
 
 // 管理端静态文件
