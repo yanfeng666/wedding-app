@@ -5,6 +5,7 @@ server/data/*.json
 .env
 server/.env
 server/test-email.js
+server/check_render_env.js
 server/extract_cookies.*
 server/local-proxy.js
 server/proxy.pac

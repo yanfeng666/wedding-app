@@ -66,6 +66,18 @@
   cursor: not-allowed;
 }
 
+.blessings-count {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+}
+
+.blessings-count strong {
+  color: var(--primary);
+  font-size: 1.1rem;
+}
+
 .blessings-list {
   max-width: 650px;
   margin: 0 auto;
@@ -75,6 +87,8 @@
 }
 
 .blessing-item {
+  display: flex;
+  gap: 14px;
   background: var(--bg-warm);
   border-radius: var(--radius-sm);
   padding: 20px 24px;
@@ -87,6 +101,24 @@
 .blessing-item.visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+.blessing-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.blessing-content-wrap {
+  flex: 1;
+  min-width: 0;
 }
 
 .blessing-header {
@@ -102,8 +134,22 @@
   color: var(--text);
 }
 
+.blessing-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.blessing-relation {
+  font-size: 0.75rem;
+  color: var(--primary);
+  background: rgba(201, 125, 139, 0.1);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
 .blessing-time {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
 }
 
@@ -111,8 +157,57 @@
   font-size: 0.9rem;
   color: var(--text-light);
   line-height: 1.6;
+  word-break: break-word;
+}
+
+.load-more-wrap {
+  text-align: center;
+  margin-top: 24px;
+}
+
+.load-more-btn {
+  padding: 10px 28px;
+  background: transparent;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  border-radius: 50px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.load-more-btn:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
+.blessings-empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--text-muted);
+}
+
+.blessing-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  z-index: 9999;
+  animation: toastIn 0.3s ease;
+}
+
+@keyframes toastIn {
+  from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
 }
 
 @media (max-width: 768px) {
   .form-row { grid-template-columns: 1fr; }
+  .blessing-item { padding: 16px; }
+  .blessing-avatar { width: 36px; height: 36px; font-size: 15px; }
 }

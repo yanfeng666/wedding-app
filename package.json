@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "cd client && npm run dev",
-    "build": "cd client && npm run build",
+    "dev:admin": "cd admin && npm run dev",
+    "build": "cd client && npm run build && cd ../admin && npm install && npm run build",
     "server": "cd server && node index.js",
-    "start": "cd client && npm run build && cd ../server && node index.js"
+    "start": "npm run build && cd server && node index.js"
   }
 }

@@ -1,15 +1,11 @@
 import { useRef, useEffect, useState } from 'react';
 import './WeddingInfo.css';
 
-const cards = [
-  { icon: '📅', title: '婚礼日期', lines: ['2026年10月1日', '农历八月廿一', '星期四'] },
-  { icon: '📍', title: '婚礼地点', lines: ['XX大酒店 · 宴会厅', 'XX市XX区XX路88号', '3楼百合厅'] },
-  { icon: '⏰', title: '时间安排', lines: ['17:00 宾客签到', '18:08 婚礼仪式', '19:00 婚宴开始'] },
-];
-
-export default function WeddingInfo() {
+export default function WeddingInfo({ config, bgImage }) {
   const [visibleItems, setVisibleItems] = useState(new Set());
   const ref = useRef(null);
+
+  const cards = config?.info_cards || [];
 
   useEffect(() => {
     const el = ref.current;
@@ -29,10 +25,14 @@ export default function WeddingInfo() {
 
     el.querySelectorAll('.info-card').forEach((item) => observer.observe(item));
     return () => observer.disconnect();
-  }, []);
+  }, [cards]);
+
+  const sectionStyle = bgImage
+    ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }
+    : {};
 
   return (
-    <section className="info section-padding" id="info">
+    <section className="info section-padding" id="info" style={sectionStyle}>
       <div className="container">
         <div className="section-header fade-in-scroll">
           <span className="label">Wedding</span>

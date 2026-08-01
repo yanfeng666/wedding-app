@@ -16,6 +16,15 @@ export default function App() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [blessings, setBlessings] = useState([]);
+  const [config, setConfig] = useState(null);
+
+  // 获取配置
+  useEffect(() => {
+    fetch(`${API_BASE}/config`)
+      .then(res => res.json())
+      .then(data => setConfig(data))
+      .catch(err => console.error('获取配置失败:', err));
+  }, []);
 
   const fetchBlessings = useCallback(async () => {
     try {
@@ -55,23 +64,22 @@ export default function App() {
     return false;
   };
 
+  const galleryImages = config?.gallery_images || [];
+
   return (
     <>
       <BlessingMarquee blessings={blessings} />
-      <Navbar />
-      <Hero />
-      <Story />
-      <Gallery images={GALLERY_IMAGES} onImageClick={openLightbox} />
-      <WeddingInfo />
-      <Invitation />
-      <Blessings
-        blessings={blessings}
-        onSubmit={submitBlessing}
-      />
-      <Footer />
+      <Navbar logo={config?.navbar_logo} />
+      <Hero config={config} bgImage={config?.hero_bg} />
+      <Story config={config} bgImage={config?.story_bg} />
+      <Gallery images={galleryImages} onImageClick={openLightbox} bgImage={config?.gallery_bg} />
+      <WeddingInfo config={config} bgImage={config?.info_bg} />
+      <Invitation config={config} bgImage={config?.invitation_bg} />
+      <Blessings blessings={blessings} onSubmit={submitBlessing} />
+      <Footer config={config} />
       {lightboxOpen && (
         <Lightbox
-          images={GALLERY_IMAGES}
+          images={galleryImages}
           currentIndex={lightboxIndex}
           onClose={closeLightbox}
         />
@@ -79,12 +87,3 @@ export default function App() {
     </>
   );
 }
-
-export const GALLERY_IMAGES = [
-  { src: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop', label: '幸福时刻' },
-  { src: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&h=600&fit=crop', label: '甜蜜瞬间' },
-  { src: 'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&h=600&fit=crop', label: '浪漫时光' },
-  { src: 'https://images.unsplash.com/photo-1529636798458-92182e662485?w=800&h=600&fit=crop', label: '携手同行' },
-  { src: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&h=600&fit=crop', label: '爱的约定' },
-  { src: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800&h=600&fit=crop', label: '一生一世' },
-];

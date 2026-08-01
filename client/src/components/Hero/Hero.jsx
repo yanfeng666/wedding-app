@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import './Hero.css';
 
-const WEDDING_DATE = new Date('2026-10-01T18:08:00').getTime();
-
-function calcCountdown() {
+function calcCountdown(weddingDateStr) {
+  const weddingDate = new Date(weddingDateStr || '2026-10-01T18:08:00').getTime();
   const now = Date.now();
-  const dist = WEDDING_DATE - now;
+  const dist = weddingDate - now;
   if (dist <= 0) return { days: '00', hours: '00', minutes: '00', seconds: '00' };
   return {
     days: String(Math.floor(dist / 86400000)).padStart(2, '0'),
@@ -15,24 +14,29 @@ function calcCountdown() {
   };
 }
 
-export default function Hero() {
-  const [countdown, setCountdown] = useState(calcCountdown);
+export default function Hero({ config, bgImage }) {
+  const [countdown, setCountdown] = useState(() => calcCountdown(config?.wedding_date));
 
   useEffect(() => {
-    const id = setInterval(() => setCountdown(calcCountdown()), 1000);
+    setCountdown(calcCountdown(config?.wedding_date));
+    const id = setInterval(() => setCountdown(calcCountdown(config?.wedding_date)), 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [config?.wedding_date]);
+
+  const heroStyle = bgImage
+    ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : {};
 
   return (
-    <section className="hero" id="home">
+    <section className="hero" id="home" style={heroStyle}>
       <div className="hero-bg-decor circle-1" />
       <div className="hero-bg-decor circle-2" />
       <div className="hero-content">
         <span className="hero-top-text">Save the Date</span>
         <h1 className="hero-names">
-          张三<span className="ampersand">&amp;</span>李四
+          {config?.groom_name || '张三'}<span className="ampersand">&amp;</span>{config?.bride_name || '李四'}
         </h1>
-        <p className="hero-date">2026年10月1日 · 星期四</p>
+        <p className="hero-date">{config?.wedding_date_display || '2026年10月1日 · 星期四'}</p>
         <div className="hero-divider" />
         <div className="countdown">
           {Object.entries(countdown).map(([key, val]) => (

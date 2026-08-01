@@ -3,13 +3,17 @@ import './Invitation.css';
 
 const API_BASE = '/api';
 
-export default function Invitation() {
+export default function Invitation({ config, bgImage }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+
+  const inv = config?.invitation_text || {};
+  const groom = config?.groom_name || '张三';
+  const bride = config?.bride_name || '李四';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,26 +50,29 @@ export default function Invitation() {
     setSubmitted(false);
   };
 
+  const sectionStyle = bgImage
+    ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }
+    : {};
+
   return (
-    <section className="invitation section-padding" id="invitation">
+    <section className="invitation section-padding" id="invitation" style={sectionStyle}>
       <div className="container">
         <div className="invitation-card fade-in-scroll">
-          <span className="invitation-label">You are Invited</span>
-          <h2>诚挚邀请</h2>
-          <div className="invitation-names">张三 &amp; 李四</div>
+          <span className="invitation-label">{inv.label || 'You are Invited'}</span>
+          <h2>{inv.title || '诚挚邀请'}</h2>
+          <div className="invitation-names">{inv.names || `${groom} & ${bride}`}</div>
           <p className="invitation-text">
-            谨定于2026年10月1日（星期四）<br />
-            在 XX大酒店 三楼百合厅<br />
-            举行结婚典礼<br />
-            届时恭请光临
+            {(inv.content || '').split('\n').map((line, i) => (
+              <span key={i}>{line}<br /></span>
+            ))}
           </p>
-          <div className="invitation-detail"><span>🕐 17:00 迎宾</span></div>
-          <div className="invitation-detail"><span>📍 XX市XX区XX路88号</span></div>
+          {(inv.details || []).map((detail, i) => (
+            <div key={i} className="invitation-detail"><span>{detail}</span></div>
+          ))}
           <button className="rsvp-btn" onClick={() => setModalOpen(true)}>确认参加</button>
         </div>
       </div>
 
-      {/* ========== RSVP 弹窗 ========== */}
       {modalOpen && (
         <div className="rsvp-overlay" onClick={handleClose}>
           <div className="rsvp-modal" onClick={(e) => e.stopPropagation()}>
