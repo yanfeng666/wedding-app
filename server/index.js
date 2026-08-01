@@ -25,6 +25,31 @@ const ADMIN_USER = process.env.ADMIN_USER || 'admin';
 const ADMIN_PASS = process.env.ADMIN_PASS || 'wedding2026';
 const ADMIN_SECRET = process.env.ADMIN_SECRET || 'wedding-admin-secret-2026';
 
+// 密码哈希
+function hashPassword(password) {
+  return crypto.createHash('sha256').update(password + 'wedding-salt').digest('hex');
+}
+
+// 验证用户（先查数据库，再查环境变量）
+async function verifyUser(username, password) {
+  const hashed = hashPassword(password);
+  // 查数据库
+  if (supabase) {
+    const { data } = await supabase
+      .from('admin_users')
+      .select('id, username')
+      .eq('username', username)
+      .eq('password', hashed)
+      .single();
+    if (data) return { id: data.id, username: data.username };
+  }
+  // 回退到环境变量
+  if (username === ADMIN_USER && password === ADMIN_PASS) {
+    return { id: 0, username: ADMIN_USER };
+  }
+  return null;
+}
+
 // 默认配置（数据库未配置时使用）
 const DEFAULT_CONFIG = {
   groom_name: '张三',
@@ -177,7 +202,7 @@ async function getConfig() {
 
 // 中间件
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
 
 // ========== 公开 API ==========
 
@@ -321,13 +346,18 @@ app.get('/api/export', async (req, res) => {
 // ========== 管理端 API ==========
 
 // 登录
-app.post('/api/admin/login', (req, res) => {
+app.post('/api/admin/login', async (req, res) => {
   const { username, password } = req.body;
-  if (username === ADMIN_USER && password === ADMIN_PASS) {
-    const token = createToken(username);
-    res.json({ token, username });
-  } else {
-    res.status(401).json({ error: '用户名或密码错误' });
+  try {
+    const user = await verifyUser(username, password);
+    if (user) {
+      const token = createToken(user.username);
+      res.json({ token, username: user.username });
+    } else {
+      res.status(401).json({ error: '用户名或密码错误' });
+    }
+  } catch {
+    res.status(500).json({ error: '登录失败' });
   }
 });
 
@@ -466,6 +496,113 @@ app.delete('/api/admin/rsvps/:id', requireAdmin, async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error('删除 RSVP 失败:', err);
+    res.status(500).json({ error: '删除失败' });
+  }
+});
+
+// ========== 账号管理 API ==========
+
+// admin_users 表的建表 SQL
+const ADMIN_USERS_SQL = `CREATE TABLE IF NOT EXISTS admin_users (
+  id BIGSERIAL PRIMARY KEY,
+  username TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);`;
+
+// 检查错误是否为"表不存在"
+function isTableMissingError(err) {
+  return err && (err.code === '42P01' || /does not exist|relation/i.test(err.message || ''));
+}
+
+// 获取账号列表
+app.get('/api/admin/users', requireAdmin, async (_req, res) => {
+  try {
+    if (!supabase) return res.json([]);
+    const { data, error } = await supabase
+      .from('admin_users')
+      .select('id, username, created_at')
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    if (isTableMissingError(err)) return res.json([]);
+    console.error('获取用户列表失败:', err);
+    res.status(500).json({ error: '获取失败' });
+  }
+});
+
+// 获取建表 SQL（用于初始化）
+app.get('/api/admin/users/schema', requireAdmin, (_req, res) => {
+  res.json({ sql: ADMIN_USERS_SQL });
+});
+
+// 创建账号
+app.post('/api/admin/users', requireAdmin, async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    if (!username?.trim() || !password?.trim()) {
+      return res.status(400).json({ error: '用户名和密码不能为空' });
+    }
+    if (!supabase) return res.status(500).json({ error: '数据库未配置' });
+    // 检查重名
+    const { data: existing } = await supabase
+      .from('admin_users')
+      .select('id')
+      .eq('username', username.trim())
+      .single();
+    if (existing) return res.status(409).json({ error: '用户名已存在' });
+    const { data, error } = await supabase
+      .from('admin_users')
+      .insert({ username: username.trim(), password: hashPassword(password) })
+      .select('id, username, created_at')
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error('创建用户失败:', err);
+    if (isTableMissingError(err)) {
+      return res.status(500).json({
+        error: 'admin_users 表不存在，请先在 Supabase SQL 编辑器中执行建表语句',
+        sql: ADMIN_USERS_SQL,
+      });
+    }
+    res.status(500).json({ error: '创建失败' });
+  }
+});
+
+// 修改密码
+app.put('/api/admin/users/:id/password', requireAdmin, async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (!password?.trim()) {
+      return res.status(400).json({ error: '密码不能为空' });
+    }
+    if (!supabase) return res.status(500).json({ error: '数据库未配置' });
+    const { error } = await supabase
+      .from('admin_users')
+      .update({ password: hashPassword(password) })
+      .eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
+    console.error('修改密码失败:', err);
+    res.status(500).json({ error: '修改失败' });
+  }
+});
+
+// 删除账号
+app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
+  try {
+    if (!supabase) return res.status(500).json({ error: '数据库未配置' });
+    const { error } = await supabase
+      .from('admin_users')
+      .delete()
+      .eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
+    console.error('删除用户失败:', err);
     res.status(500).json({ error: '删除失败' });
   }
 });
