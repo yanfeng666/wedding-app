@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "cd client && npm run dev",
     "dev:admin": "cd admin && npm run dev",
-    "build": "cd client && npm run build && cd ../admin && npm install && npm run build",
+    "build:client": "cd client && npm install && npm run build",
+    "build:admin": "cd admin && npm install && npm run build",
+    "build": "npm run build:client && npm run build:admin",
+    "render-build": "npm run build:client && npm run build:admin && cd server && npm install",
     "server": "cd server && node index.js",
     "start": "npm run build && cd server && node index.js"
   }
