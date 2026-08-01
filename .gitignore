@@ -2,3 +2,10 @@ node_modules
 dist
 server/data/*.json
 .DS_Store
+.env
+server/.env
+server/test-email.js
+server/extract_cookies.*
+server/local-proxy.js
+server/proxy.pac
+server/render_api.js
