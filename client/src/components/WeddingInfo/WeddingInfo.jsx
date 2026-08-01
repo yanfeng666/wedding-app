@@ -29,11 +29,15 @@ export default function WeddingInfo({ config, bgImage }) {
 
   const sectionStyle = bgImage
     ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : {};
+    : config?.info_bg_color
+      ? { background: config.info_bg_color }
+      : {};
+
+  const contentStyle = config?.info_text_color ? { color: config.info_text_color } : {};
 
   return (
     <section className="info section-padding" id="info" style={sectionStyle}>
-      <div className="container">
+      <div className="container" style={contentStyle}>
         <div className="section-header fade-in-scroll">
           <span className="label">Wedding</span>
           <h2>婚礼信息</h2>

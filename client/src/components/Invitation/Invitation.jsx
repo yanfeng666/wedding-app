@@ -52,11 +52,15 @@ export default function Invitation({ config, bgImage }) {
 
   const sectionStyle = bgImage
     ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : {};
+    : config?.invitation_bg_color
+      ? { background: config.invitation_bg_color }
+      : {};
+
+  const contentStyle = config?.invitation_text_color ? { color: config.invitation_text_color } : {};
 
   return (
     <section className="invitation section-padding" id="invitation" style={sectionStyle}>
-      <div className="container">
+      <div className="container" style={contentStyle}>
         <div className="invitation-card fade-in-scroll">
           <span className="invitation-label">{inv.label || 'You are Invited'}</span>
           <h2>{inv.title || '诚挚邀请'}</h2>

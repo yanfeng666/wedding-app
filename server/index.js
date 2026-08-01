@@ -67,6 +67,15 @@ const DEFAULT_CONFIG = {
   heading_color: '',
   story_img_fit: 'cover',
   gallery_img_fit: 'cover',
+  hero_bg_color: '',
+  story_bg_color: '',
+  gallery_bg_color: '',
+  info_bg_color: '',
+  invitation_bg_color: '',
+  story_text_color: '',
+  gallery_text_color: '',
+  info_text_color: '',
+  invitation_text_color: '',
   story_items: [
     { date: '2021年3月', title: '初次相遇', desc: '在一次朋友聚会上，我们第一次见到了彼此。你笑起来的样子，让我一见倾心。', img: 'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=400&h=300&fit=crop' },
     { date: '2022年6月', title: '第一次旅行', desc: '我们一起去了大理，在洱海边骑行，苍山下看云。那是最美好的夏天。', img: 'https://images.unsplash.com/photo-1528164344705-47542687000d?w=400&h=300&fit=crop' },
@@ -390,6 +399,8 @@ app.put('/api/admin/config', requireAdmin, async (req, res) => {
       'hero_bg', 'story_bg', 'gallery_bg', 'info_bg', 'invitation_bg',
       'navbar_logo', 'footer_quote',
       'text_color', 'heading_color', 'story_img_fit', 'gallery_img_fit',
+      'hero_bg_color', 'story_bg_color', 'gallery_bg_color', 'info_bg_color', 'invitation_bg_color',
+      'story_text_color', 'gallery_text_color', 'info_text_color', 'invitation_text_color',
       'story_items', 'gallery_images', 'info_cards', 'invitation_text',
     ];
 

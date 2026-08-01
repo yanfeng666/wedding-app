@@ -13,6 +13,10 @@ export default function GallerySection({ config, onSave }) {
     setImages(prev => {
       const next = [...prev];
       next[index] = { ...next[index], [field]: value };
+      // 如果当前图片上传了内容，且是最后一张空图片，自动追加一个空位
+      if (field === 'src' && value && index === next.length - 1) {
+        next.push({ src: '', label: '' });
+      }
       return next;
     });
   };
@@ -37,22 +41,27 @@ export default function GallerySection({ config, onSave }) {
 
   const handleSubmit = () => {
     setSaving(true);
-    onSave({ gallery_images: images });
+    // 过滤掉没有 src 的空位
+    const validImages = images.filter(img => img.src);
+    onSave({ gallery_images: validImages });
     setSaving(false);
   };
 
+  const hasValidImages = images.some(img => img.src);
+
   return (
     <div>
+      <Button type="dashed" icon={<PlusOutlined />} onClick={addImage} block style={{ marginBottom: 16 }}>
+        添加图片
+      </Button>
       {images.length === 0 && (
-        <Empty description="暂无相册图片" style={{ marginBottom: 16 }}>
-          <Button type="primary" icon={<PlusOutlined />} onClick={addImage}>添加图片</Button>
-        </Empty>
+        <Empty description="暂无相册图片，点击上方按钮添加" style={{ marginBottom: 16 }} />
       )}
       {images.map((img, i) => (
         <Card
           key={i}
           style={{ marginBottom: 16 }}
-          title={`图片 ${i + 1}`}
+          title={`图片 ${i + 1}${img.src ? '' : '（未上传）'}`}
           extra={
             <Space>
               <Button size="small" icon={<ArrowUpOutlined />} disabled={i === 0} onClick={() => moveImage(i, -1)} />
@@ -74,15 +83,10 @@ export default function GallerySection({ config, onSave }) {
           />
         </Card>
       ))}
-      {images.length > 0 && (
-        <>
-          <Button type="dashed" icon={<PlusOutlined />} onClick={addImage} block style={{ marginBottom: 16 }}>
-            添加图片
-          </Button>
-          <Button type="primary" size="large" onClick={handleSubmit} loading={saving}>
-            保存相册配置
-          </Button>
-        </>
+      {hasValidImages && (
+        <Button type="primary" size="large" onClick={handleSubmit} loading={saving}>
+          保存相册配置
+        </Button>
       )}
     </div>
   );

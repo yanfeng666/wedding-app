@@ -75,12 +75,10 @@
 }
 
 .countdown-item {
-  background: var(--white);
+  background: transparent;
   border-radius: var(--radius-sm);
   padding: 18px 16px;
   min-width: 80px;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border);
 }
 
 .countdown-item .number {

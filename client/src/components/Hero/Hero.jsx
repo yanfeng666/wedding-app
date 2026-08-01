@@ -25,7 +25,9 @@ export default function Hero({ config, bgImage }) {
 
   const heroStyle = bgImage
     ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : {};
+    : config?.hero_bg_color
+      ? { background: config.hero_bg_color }
+      : {};
 
   return (
     <section className="hero" id="home" style={heroStyle}>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import './Gallery.css';
 
-export default function Gallery({ images = [], onImageClick, bgImage, imgFit = 'cover' }) {
+export default function Gallery({ images = [], onImageClick, bgImage, imgFit = 'cover', bgColor, textColor }) {
   const [current, setCurrent] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [direction, setDirection] = useState(0);
@@ -43,12 +43,16 @@ export default function Gallery({ images = [], onImageClick, bgImage, imgFit = '
 
   const sectionStyle = bgImage
     ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : {};
+    : bgColor
+      ? { background: bgColor }
+      : {};
+
+  const contentStyle = textColor ? { color: textColor } : {};
 
   if (total === 0) {
     return (
       <section className="gallery section-padding" id="gallery" style={sectionStyle}>
-        <div className="container">
+        <div className="container" style={contentStyle}>
           <div className="section-header">
             <span className="label">Gallery</span>
             <h2>婚纱相册</h2>
@@ -64,7 +68,7 @@ export default function Gallery({ images = [], onImageClick, bgImage, imgFit = '
 
   return (
     <section className="gallery section-padding" id="gallery" style={sectionStyle}>
-      <div className="container">
+      <div className="container" style={contentStyle}>
         <div className="section-header">
           <span className="label">Gallery</span>
           <h2>婚纱相册</h2>

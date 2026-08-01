@@ -66,13 +66,17 @@ export default function Story({ config, bgImage }) {
 
   const sectionStyle = bgImage
     ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : {};
+    : config?.story_bg_color
+      ? { background: config.story_bg_color }
+      : {};
 
   const imgFit = config?.story_img_fit || 'cover';
+  const textColor = config?.story_text_color;
+  const contentStyle = textColor ? { color: textColor } : {};
 
   return (
     <section className="story section-padding" id="story" style={sectionStyle}>
-      <div className="container">
+      <div className="container" style={contentStyle}>
         <div className="section-header fade-in-scroll">
           <span className="label">Our Story</span>
           <h2>我们的故事</h2>

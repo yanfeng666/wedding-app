@@ -67,10 +67,9 @@
 .timeline-card {
   width: 45%;
   padding-left: 60px;
-  background: var(--bg);
+  background: transparent;
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 
 .timeline-card.even {

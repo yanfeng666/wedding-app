@@ -162,6 +162,8 @@ export default function App() {
         onImageClick={openLightbox}
         bgImage={config?.gallery_bg}
         imgFit={config?.gallery_img_fit}
+        bgColor={config?.gallery_bg_color}
+        textColor={config?.gallery_text_color}
       />
       <WeddingInfo config={config} bgImage={config?.info_bg} />
       <Invitation config={config} bgImage={config?.invitation_bg} />
