@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import './Gallery.css';
 
-export default function Gallery({ images = [], onImageClick, bgImage }) {
+export default function Gallery({ images = [], onImageClick, bgImage, imgFit = 'cover' }) {
   const [current, setCurrent] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [direction, setDirection] = useState(0);
@@ -42,7 +42,7 @@ export default function Gallery({ images = [], onImageClick, bgImage }) {
   };
 
   const sectionStyle = bgImage
-    ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }
+    ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
     : {};
 
   if (total === 0) {
@@ -91,7 +91,7 @@ export default function Gallery({ images = [], onImageClick, bgImage }) {
                     className={className}
                     onClick={() => i === current && onImageClick && onImageClick(i)}
                   >
-                    <img src={img.src} alt={img.label} />
+                    <img src={img.src} alt={img.label} style={{ objectFit: imgFit }} />
                     <div className="slide-label">{img.label}</div>
                   </div>
                 );

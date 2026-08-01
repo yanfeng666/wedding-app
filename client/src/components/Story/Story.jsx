@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import './Story.css';
 
-function TimelineItem({ event, index, isVisible }) {
+function TimelineItem({ event, index, isVisible, imgFit }) {
   const isEven = index % 2 === 1;
   return (
     <div
@@ -13,7 +13,7 @@ function TimelineItem({ event, index, isVisible }) {
       <div className={`timeline-card${isEven ? ' even' : ''}`}>
         {event.img && (
           <div className="timeline-card-img">
-            <img src={event.img} alt={event.title} loading="lazy" />
+            <img src={event.img} alt={event.title} loading="lazy" style={{ objectFit: imgFit }} />
           </div>
         )}
         <div className="timeline-card-body">
@@ -65,8 +65,10 @@ export default function Story({ config, bgImage }) {
   }, [events]);
 
   const sectionStyle = bgImage
-    ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }
+    ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
     : {};
+
+  const imgFit = config?.story_img_fit || 'cover';
 
   return (
     <section className="story section-padding" id="story" style={sectionStyle}>
@@ -83,6 +85,7 @@ export default function Story({ config, bgImage }) {
               event={event}
               index={i}
               isVisible={visibleItems.has(i)}
+              imgFit={imgFit}
             />
           ))}
         </div>

@@ -94,7 +94,7 @@
   font-size: 1.05rem;
   font-weight: 600;
   margin-bottom: 6px;
-  color: var(--text);
+  color: var(--heading-color);
 }
 
 .timeline-card-body p {

@@ -28,7 +28,7 @@ export default function WeddingInfo({ config, bgImage }) {
   }, [cards]);
 
   const sectionStyle = bgImage
-    ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }
+    ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
     : {};
 
   return (

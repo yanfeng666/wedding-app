@@ -51,7 +51,7 @@ export default function Invitation({ config, bgImage }) {
   };
 
   const sectionStyle = bgImage
-    ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }
+    ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
     : {};
 
   return (
