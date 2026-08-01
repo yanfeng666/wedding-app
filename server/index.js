@@ -464,17 +464,6 @@ app.get('/api/admin/rsvps', requireAdmin, async (_req, res) => {
 const adminDistPath = path.join(__dirname, '..', 'admin', 'dist');
 app.use('/admin', express.static(adminDistPath));
 
-// 诊断端点（部署后删除）
-app.get('/api/debug/admin', (_req, res) => {
-  const fs = require('fs');
-  const exists = fs.existsSync(adminDistPath);
-  let files = [];
-  let parentFiles = [];
-  try { files = fs.readdirSync(adminDistPath); } catch (e) { files = [e.message]; }
-  try { parentFiles = fs.readdirSync(path.join(__dirname, '..', 'admin')); } catch (e) { parentFiles = [e.message]; }
-  res.json({ adminDistPath, exists, files, parentFiles });
-});
-
 // 客户端静态文件
 const clientDistPath = path.join(__dirname, '..', 'client', 'dist');
 app.use(express.static(clientDistPath));
