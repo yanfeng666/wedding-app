@@ -47,12 +47,13 @@ export default function Gallery({ images = [], onImageClick, bgImage, imgFit = '
       ? { background: bgColor }
       : {};
 
-  const contentStyle = textColor ? { color: textColor } : {};
+  const vars = textColor ? { '--text': textColor, '--text-light': textColor, '--heading-color': textColor } : {};
+  const mergedStyle = { ...sectionStyle, ...vars };
 
   if (total === 0) {
     return (
-      <section className="gallery section-padding" id="gallery" style={sectionStyle}>
-        <div className="container" style={contentStyle}>
+      <section className="gallery section-padding" id="gallery" style={mergedStyle}>
+        <div className="container">
           <div className="section-header">
             <span className="label">Gallery</span>
             <h2>婚纱相册</h2>
@@ -67,8 +68,8 @@ export default function Gallery({ images = [], onImageClick, bgImage, imgFit = '
   }
 
   return (
-    <section className="gallery section-padding" id="gallery" style={sectionStyle}>
-      <div className="container" style={contentStyle}>
+    <section className="gallery section-padding" id="gallery" style={mergedStyle}>
+      <div className="container">
         <div className="section-header">
           <span className="label">Gallery</span>
           <h2>婚纱相册</h2>

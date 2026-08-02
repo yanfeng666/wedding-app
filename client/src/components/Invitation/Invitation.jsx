@@ -56,11 +56,12 @@ export default function Invitation({ config, bgImage }) {
       ? { background: config.invitation_bg_color }
       : {};
 
-  const contentStyle = config?.invitation_text_color ? { color: config.invitation_text_color } : {};
+  const textColor = config?.invitation_text_color;
+  const vars = textColor ? { '--text': textColor, '--text-light': textColor, '--heading-color': textColor } : {};
 
   return (
-    <section className="invitation section-padding" id="invitation" style={sectionStyle}>
-      <div className="container" style={contentStyle}>
+    <section className="invitation section-padding" id="invitation" style={{ ...sectionStyle, ...vars }}>
+      <div className="container">
         <div className="invitation-card fade-in-scroll">
           <span className="invitation-label">{inv.label || 'You are Invited'}</span>
           <h2>{inv.title || '诚挚邀请'}</h2>

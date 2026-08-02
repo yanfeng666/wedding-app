@@ -167,7 +167,7 @@ export default function App() {
       />
       <WeddingInfo config={config} bgImage={config?.info_bg} />
       <Invitation config={config} bgImage={config?.invitation_bg} />
-      <Blessings blessings={blessings} onSubmit={submitBlessing} />
+      <Blessings blessings={blessings} onSubmit={submitBlessing} textColor={config?.blessings_text_color} />
       <Footer config={config} />
       {lightboxOpen && (
         <Lightbox

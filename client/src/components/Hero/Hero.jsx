@@ -29,8 +29,11 @@ export default function Hero({ config, bgImage }) {
       ? { background: config.hero_bg_color }
       : {};
 
+  const heroTextColor = config?.hero_text_color;
+  const heroVars = heroTextColor ? { '--text': heroTextColor, '--text-light': heroTextColor, '--heading-color': heroTextColor } : {};
+
   return (
-    <section className="hero" id="home" style={heroStyle}>
+    <section className="hero" id="home" style={{ ...heroStyle, ...heroVars }}>
       <div className="hero-bg-decor circle-1" />
       <div className="hero-bg-decor circle-2" />
       <div className="hero-content">

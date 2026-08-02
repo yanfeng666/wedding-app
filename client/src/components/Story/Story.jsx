@@ -72,11 +72,11 @@ export default function Story({ config, bgImage }) {
 
   const imgFit = config?.story_img_fit || 'cover';
   const textColor = config?.story_text_color;
-  const contentStyle = textColor ? { color: textColor } : {};
+  const vars = textColor ? { '--text': textColor, '--text-light': textColor, '--heading-color': textColor } : {};
 
   return (
-    <section className="story section-padding" id="story" style={sectionStyle}>
-      <div className="container" style={contentStyle}>
+    <section className="story section-padding" id="story" style={{ ...sectionStyle, ...vars }}>
+      <div className="container">
         <div className="section-header fade-in-scroll">
           <span className="label">Our Story</span>
           <h2>我们的故事</h2>

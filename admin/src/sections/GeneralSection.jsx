@@ -5,14 +5,16 @@ import dayjs from 'dayjs';
 export default function GeneralSection({ config, onSave }) {
   const [form] = Form.useForm();
   const [saving, setSaving] = useState(false);
+  const [textColor, setTextColor] = useState(config.text_color || '');
+  const [headingColor, setHeadingColor] = useState(config.heading_color || '');
 
   const handleSubmit = async (values) => {
     setSaving(true);
     onSave({
       ...values,
       wedding_date: values.wedding_date ? values.wedding_date.format('YYYY-MM-DDTHH:mm:ss') : '',
-      text_color: values.text_color?.toHexString?.() || values.text_color || '',
-      heading_color: values.heading_color?.toHexString?.() || values.heading_color || '',
+      text_color: textColor,
+      heading_color: headingColor,
     });
     setSaving(false);
   };
@@ -29,8 +31,6 @@ export default function GeneralSection({ config, onSave }) {
         wedding_date_display: config.wedding_date_display || '',
         navbar_logo: config.navbar_logo || '',
         footer_quote: config.footer_quote || '',
-        text_color: config.text_color || '',
-        heading_color: config.heading_color || '',
         story_img_fit: config.story_img_fit || 'cover',
         gallery_img_fit: config.gallery_img_fit || 'cover',
       }}
@@ -69,24 +69,38 @@ export default function GeneralSection({ config, onSave }) {
         </Form.Item>
       </Card>
 
-      <Card title="文字颜色" style={{ marginBottom: 16 }}>
-        <Space direction="vertical" style={{ width: '100%' }}>
-          <Form.Item name="text_color" label="正文颜色（深色背景建议设为浅色）">
-            <ColorPicker showText format="hex" disabledAlpha>
-              <Input
-                placeholder="留空使用默认颜色 #3d2c2e"
-                prefix={<span>🎨</span>}
+      <Card title="文字颜色（全局默认）" style={{ marginBottom: 16 }}>
+        <Space direction="vertical" style={{ width: '100%' }} size="large">
+          <div>
+            <p style={{ marginBottom: 8 }}>正文颜色（深色背景建议设为浅色）</p>
+            <Space>
+              <ColorPicker
+                value={textColor || undefined}
+                onChange={(color) => setTextColor(color?.toHexString?.() || '')}
+                showText
+                format="hex"
+                disabledAlpha
               />
-            </ColorPicker>
-          </Form.Item>
-          <Form.Item name="heading_color" label="标题颜色（可不同于正文）">
-            <ColorPicker showText format="hex" disabledAlpha>
-              <Input
-                placeholder="留空跟随正文颜色"
-                prefix={<span>✨</span>}
+              {textColor && (
+                <Button size="small" type="link" onClick={() => setTextColor('')}>清除</Button>
+              )}
+            </Space>
+          </div>
+          <div>
+            <p style={{ marginBottom: 8 }}>标题颜色（可不同于正文）</p>
+            <Space>
+              <ColorPicker
+                value={headingColor || undefined}
+                onChange={(color) => setHeadingColor(color?.toHexString?.() || '')}
+                showText
+                format="hex"
+                disabledAlpha
               />
-            </ColorPicker>
-          </Form.Item>
+              {headingColor && (
+                <Button size="small" type="link" onClick={() => setHeadingColor('')}>清除</Button>
+              )}
+            </Space>
+          </div>
         </Space>
       </Card>
 

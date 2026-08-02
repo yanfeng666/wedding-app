@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Layout, Menu, Spin, message, Avatar } from 'antd';
+import { Layout, Menu, Spin, message, Avatar, Button } from 'antd';
 import {
   SettingOutlined, PictureOutlined, BookOutlined,
   CameraOutlined, ProfileOutlined, MailOutlined,
@@ -45,6 +45,7 @@ export default function Dashboard({ token, onLogout }) {
   const [activeTab, setActiveTab] = useState('general');
   const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const currentUser = getUsernameFromToken(token);
 
@@ -72,6 +73,7 @@ export default function Dashboard({ token, onLogout }) {
   }, [fetchConfig]);
 
   const saveConfig = async (updates) => {
+    setSaving(true);
     try {
       const res = await fetch('/api/admin/config', {
         method: 'PUT',
@@ -90,6 +92,8 @@ export default function Dashboard({ token, onLogout }) {
       showToast('保存成功！');
     } catch (err) {
       showToast(err.message || '保存失败', 'error');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -152,7 +156,21 @@ export default function Dashboard({ token, onLogout }) {
             {MENU_ITEMS.find(m => m.key === activeTab)?.label}
           </h2>
         </Header>
-        <Content style={{ margin: 24, padding: 24, background: '#fff', borderRadius: 12, minHeight: 360 }}>
+        <Content style={{ margin: 24, padding: 24, background: '#fff', borderRadius: 12, minHeight: 360, position: 'relative' }}>
+          {saving && (
+            <div style={{
+              position: 'absolute',
+              top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(255,255,255,0.7)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 100,
+              borderRadius: 12,
+            }}>
+              <Spin size="large" tip="保存中..." />
+            </div>
+          )}
           {renderContent()}
         </Content>
       </Layout>
