@@ -31,6 +31,7 @@ export default function Hero({ config, bgImage }) {
 
   const heroTextColor = config?.hero_text_color;
   const heroVars = heroTextColor ? { '--text': heroTextColor, '--text-light': heroTextColor, '--heading-color': heroTextColor } : {};
+  const colors = config?.section_colors || {};
 
   return (
     <section className="hero" id="home" style={{ ...heroStyle, ...heroVars }}>
@@ -39,15 +40,17 @@ export default function Hero({ config, bgImage }) {
       <div className="hero-content">
         <span className="hero-top-text">Save the Date</span>
         <h1 className="hero-names">
-          {config?.groom_name || '张三'}<span className="ampersand">&amp;</span>{config?.bride_name || '李四'}
+          <span style={{ color: colors.groom_name_color || undefined }}>{config?.groom_name || '张三'}</span>
+          <span className="ampersand">&amp;</span>
+          <span style={{ color: colors.bride_name_color || undefined }}>{config?.bride_name || '李四'}</span>
         </h1>
-        <p className="hero-date">{config?.wedding_date_display || '2026年10月1日 · 星期四'}</p>
+        <p className="hero-date" style={{ color: colors.date_display_color || undefined }}>{config?.wedding_date_display || '2026年10月1日 · 星期四'}</p>
         <div className="hero-divider" />
         <div className="countdown">
           {Object.entries(countdown).map(([key, val]) => (
             <div className="countdown-item" key={key}>
-              <span className="number">{val}</span>
-              <span className="label">
+              <span className="number" style={{ color: colors.countdown_number_color || undefined }}>{val}</span>
+              <span className="label" style={{ color: colors.countdown_label_color || undefined }}>
                 {{ days: '天', hours: '时', minutes: '分', seconds: '秒' }[key]}
               </span>
             </div>

@@ -1,13 +1,20 @@
 import { useState } from 'react';
-import { Card, Button, Input, Space, Empty } from 'antd';
+import { Card, Button, Input, Space, Empty, Divider } from 'antd';
 import { PlusOutlined, DeleteOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import ImageUpload from '../components/ImageUpload';
+import TextColorPicker from '../components/TextColorPicker';
 
 export default function StorySection({ config, onSave }) {
   const [items, setItems] = useState(
     config.story_items ? [...config.story_items] : []
   );
   const [saving, setSaving] = useState(false);
+  const sc = config.section_colors || {};
+  const [colors, setColors] = useState({
+    story_date_color: sc.story_date_color || '',
+    story_title_color: sc.story_title_color || '',
+    story_desc_color: sc.story_desc_color || '',
+  });
 
   const updateItem = (index, field, value) => {
     setItems(prev => {
@@ -37,12 +44,41 @@ export default function StorySection({ config, onSave }) {
 
   const handleSubmit = () => {
     setSaving(true);
-    onSave({ story_items: items });
+    onSave({
+      story_items: items,
+      section_colors: { ...sc, ...colors },
+    });
     setSaving(false);
   };
 
   return (
     <div>
+      <Card title="文字颜色" style={{ marginBottom: 16 }}>
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <div>
+            <span style={{ marginRight: 12 }}>日期文字颜色</span>
+            <TextColorPicker
+              value={colors.story_date_color}
+              onChange={(v) => setColors(prev => ({ ...prev, story_date_color: v }))}
+            />
+          </div>
+          <div>
+            <span style={{ marginRight: 12 }}>标题文字颜色</span>
+            <TextColorPicker
+              value={colors.story_title_color}
+              onChange={(v) => setColors(prev => ({ ...prev, story_title_color: v }))}
+            />
+          </div>
+          <div>
+            <span style={{ marginRight: 12 }}>描述文字颜色</span>
+            <TextColorPicker
+              value={colors.story_desc_color}
+              onChange={(v) => setColors(prev => ({ ...prev, story_desc_color: v }))}
+            />
+          </div>
+        </Space>
+      </Card>
+
       {items.length === 0 && (
         <Empty description="暂无故事" style={{ marginBottom: 16 }}>
           <Button type="primary" icon={<PlusOutlined />} onClick={addItem}>添加故事</Button>

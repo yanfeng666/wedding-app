@@ -20,7 +20,7 @@
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 40px rgba(61, 44, 46, 0.15);
-  background: #000;
+  background: transparent;
 }
 
 .carousel-viewport {

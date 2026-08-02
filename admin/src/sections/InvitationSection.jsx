@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Card, Button, Input, Form, Space } from 'antd';
 import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
+import TextColorPicker from '../components/TextColorPicker';
 
 export default function InvitationSection({ config, onSave }) {
   const [form, setForm] = useState({
@@ -11,6 +12,14 @@ export default function InvitationSection({ config, onSave }) {
     details: config.invitation_text?.details || [],
   });
   const [saving, setSaving] = useState(false);
+  const sc = config.section_colors || {};
+  const [colors, setColors] = useState({
+    invitation_label_color: sc.invitation_label_color || '',
+    invitation_title_color: sc.invitation_title_color || '',
+    invitation_names_color: sc.invitation_names_color || '',
+    invitation_content_color: sc.invitation_content_color || '',
+    invitation_detail_color: sc.invitation_detail_color || '',
+  });
 
   const handleChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -34,12 +43,32 @@ export default function InvitationSection({ config, onSave }) {
 
   const handleSubmit = () => {
     setSaving(true);
-    onSave({ invitation_text: form });
+    onSave({ invitation_text: form, section_colors: { ...sc, ...colors } });
     setSaving(false);
   };
 
   return (
     <div>
+      <Card title="文字颜色" style={{ marginBottom: 16 }}>
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          {[
+            { key: 'invitation_label_color', label: '英文标签颜色' },
+            { key: 'invitation_title_color', label: '主标题颜色' },
+            { key: 'invitation_names_color', label: '新人姓名颜色' },
+            { key: 'invitation_content_color', label: '正文内容颜色' },
+            { key: 'invitation_detail_color', label: '附加信息颜色' },
+          ].map(item => (
+            <div key={item.key}>
+              <span style={{ marginRight: 12 }}>{item.label}</span>
+              <TextColorPicker
+                value={colors[item.key]}
+                onChange={(v) => setColors(prev => ({ ...prev, [item.key]: v }))}
+              />
+            </div>
+          ))}
+        </Space>
+      </Card>
+
       <Card title="邀请函内容" style={{ marginBottom: 16 }}>
         <Form layout="vertical">
           <Space.Compact style={{ width: '100%' }}>

@@ -36,6 +36,27 @@ export default function Blessings({ blessings = [], onSubmit, textColor }) {
     setSubmitting(false);
   };
 
+  const getAvatarColor = (name) => {
+    const colors = ['#e91e63', '#9c27b0', '#3f51b5', '#009688', '#ff5722', '#795548', '#607d8b'];
+    let hash = 0;
+    for (let i = 0; i < (name || '').length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  };
+
+  const formatTime = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = (now - date) / 1000;
+    if (diff < 60) return '刚刚';
+    if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)}天前`;
+    return date.toLocaleDateString('zh-CN');
+  };
+
   const vars = textColor ? { '--text': textColor, '--text-light': textColor, '--heading-color': textColor } : {};
 
   return (
@@ -75,6 +96,28 @@ export default function Blessings({ blessings = [], onSubmit, textColor }) {
             {submitting ? '提交中...' : '💝 送上祝福'}
           </button>
         </form>
+
+        {blessings.length > 0 && (
+          <div className="blessings-scroll">
+            {blessings.map((b, i) => (
+              <div key={b.id || i} className="blessing-item">
+                <div className="blessing-avatar" style={{ background: getAvatarColor(b.name) }}>
+                  {(b.name || '?').charAt(0)}
+                </div>
+                <div className="blessing-content-wrap">
+                  <div className="blessing-header">
+                    <span className="blessing-name">{b.name}</span>
+                    <span className="blessing-meta">
+                      <span className="blessing-relation">{b.relation}</span>
+                      <span className="blessing-time">{formatTime(b.created_at)}</span>
+                    </span>
+                  </div>
+                  <p className="blessing-message">{b.message}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {toast && <div className="blessing-toast">{toast}</div>}

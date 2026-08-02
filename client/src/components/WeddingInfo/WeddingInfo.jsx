@@ -34,6 +34,7 @@ export default function WeddingInfo({ config, bgImage }) {
       : {};
 
   const textColor = config?.info_text_color;
+  const colors = config?.section_colors || {};
   const vars = textColor ? { '--text': textColor, '--text-light': textColor, '--heading-color': textColor } : {};
 
   return (
@@ -53,9 +54,9 @@ export default function WeddingInfo({ config, bgImage }) {
               style={{ transitionDelay: `${i * 0.15}s` }}
             >
               <div className="icon">{card.icon}</div>
-              <h3>{card.title}</h3>
+              <h3 style={{ color: colors.info_title_color || undefined }}>{card.title}</h3>
               {card.lines.map((line, j) => (
-                <p key={j}>{line}</p>
+                <p key={j} style={{ color: colors.info_content_color || undefined }}>{line}</p>
               ))}
             </div>
           ))}

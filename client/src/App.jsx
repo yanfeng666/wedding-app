@@ -154,7 +154,7 @@ export default function App() {
         </div>
       )}
       <BlessingMarquee blessings={blessings} />
-      <Navbar logo={config?.navbar_logo} />
+      <Navbar logo={config?.navbar_logo} logoColor={config?.section_colors?.navbar_logo_color} />
       <Hero config={config} bgImage={config?.hero_bg} />
       <Story config={config} bgImage={config?.story_bg} />
       <Gallery

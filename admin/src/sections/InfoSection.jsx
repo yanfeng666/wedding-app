@@ -1,12 +1,18 @@
 import { useState } from 'react';
 import { Card, Button, Input, Space, Empty } from 'antd';
 import { PlusOutlined, DeleteOutlined, MinusCircleOutlined } from '@ant-design/icons';
+import TextColorPicker from '../components/TextColorPicker';
 
 export default function InfoSection({ config, onSave }) {
   const [cards, setCards] = useState(
     config.info_cards ? config.info_cards.map(c => ({ ...c, lines: [...(c.lines || [])] })) : []
   );
   const [saving, setSaving] = useState(false);
+  const sc = config.section_colors || {};
+  const [colors, setColors] = useState({
+    info_title_color: sc.info_title_color || '',
+    info_content_color: sc.info_content_color || '',
+  });
 
   const updateCard = (index, field, value) => {
     setCards(prev => {
@@ -52,12 +58,31 @@ export default function InfoSection({ config, onSave }) {
 
   const handleSubmit = () => {
     setSaving(true);
-    onSave({ info_cards: cards });
+    onSave({ info_cards: cards, section_colors: { ...sc, ...colors } });
     setSaving(false);
   };
 
   return (
     <div>
+      <Card title="文字颜色" style={{ marginBottom: 16 }}>
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <div>
+            <span style={{ marginRight: 12 }}>卡片标题颜色</span>
+            <TextColorPicker
+              value={colors.info_title_color}
+              onChange={(v) => setColors(prev => ({ ...prev, info_title_color: v }))}
+            />
+          </div>
+          <div>
+            <span style={{ marginRight: 12 }}>卡片内容颜色</span>
+            <TextColorPicker
+              value={colors.info_content_color}
+              onChange={(v) => setColors(prev => ({ ...prev, info_content_color: v }))}
+            />
+          </div>
+        </Space>
+      </Card>
+
       {cards.length === 0 && (
         <Empty description="暂无信息卡片" style={{ marginBottom: 16 }}>
           <Button type="primary" icon={<PlusOutlined />} onClick={addCard}>添加信息卡片</Button>

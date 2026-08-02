@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './Navbar.css';
 
-export default function Navbar({ logo }) {
+export default function Navbar({ logo, logoColor }) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
@@ -37,7 +37,7 @@ export default function Navbar({ logo }) {
   return (
     <nav className={`nav${scrolled ? ' scrolled' : ''}`}>
       <div className="container nav-inner">
-        <a href="#home" className="nav-logo">{logo || '我们结婚啦'}</a>
+        <a href="#home" className="nav-logo" style={{ color: logoColor || undefined }}>{logo || '我们结婚啦'}</a>
         <button
           className={`menu-toggle${menuOpen ? ' active' : ''}`}
           onClick={() => setMenuOpen(!menuOpen)}

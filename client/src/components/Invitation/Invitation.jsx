@@ -57,22 +57,23 @@ export default function Invitation({ config, bgImage }) {
       : {};
 
   const textColor = config?.invitation_text_color;
+  const colors = config?.section_colors || {};
   const vars = textColor ? { '--text': textColor, '--text-light': textColor, '--heading-color': textColor } : {};
 
   return (
     <section className="invitation section-padding" id="invitation" style={{ ...sectionStyle, ...vars }}>
       <div className="container">
         <div className="invitation-card fade-in-scroll">
-          <span className="invitation-label">{inv.label || 'You are Invited'}</span>
-          <h2>{inv.title || '诚挚邀请'}</h2>
-          <div className="invitation-names">{inv.names || `${groom} & ${bride}`}</div>
-          <p className="invitation-text">
+          <span className="invitation-label" style={{ color: colors.invitation_label_color || undefined }}>{inv.label || 'You are Invited'}</span>
+          <h2 style={{ color: colors.invitation_title_color || undefined }}>{inv.title || '诚挚邀请'}</h2>
+          <div className="invitation-names" style={{ color: colors.invitation_names_color || undefined }}>{inv.names || `${groom} & ${bride}`}</div>
+          <p className="invitation-text" style={{ color: colors.invitation_content_color || undefined }}>
             {(inv.content || '').split('\n').map((line, i) => (
               <span key={i}>{line}<br /></span>
             ))}
           </p>
           {(inv.details || []).map((detail, i) => (
-            <div key={i} className="invitation-detail"><span>{detail}</span></div>
+            <div key={i} className="invitation-detail"><span style={{ color: colors.invitation_detail_color || undefined }}>{detail}</span></div>
           ))}
           <button className="rsvp-btn" onClick={() => setModalOpen(true)}>确认参加</button>
         </div>

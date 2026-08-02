@@ -1,20 +1,37 @@
 import { useState } from 'react';
-import { Form, Input, Button, Card, DatePicker, Space, Select, ColorPicker } from 'antd';
+import { Form, Input, Button, Card, DatePicker, Space, Select } from 'antd';
 import dayjs from 'dayjs';
+import TextColorPicker from '../components/TextColorPicker';
+
+function ColorInput({ label, value, onChange }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+      <span style={{ color: '#666', fontSize: 14, minWidth: 80 }}>{label}</span>
+      <TextColorPicker value={value} onChange={onChange} />
+    </div>
+  );
+}
 
 export default function GeneralSection({ config, onSave }) {
   const [form] = Form.useForm();
   const [saving, setSaving] = useState(false);
-  const [textColor, setTextColor] = useState(config.text_color || '');
-  const [headingColor, setHeadingColor] = useState(config.heading_color || '');
+  const sc = config.section_colors || {};
+  const [colors, setColors] = useState({
+    groom_name_color: sc.groom_name_color || '',
+    bride_name_color: sc.bride_name_color || '',
+    date_display_color: sc.date_display_color || '',
+    countdown_number_color: sc.countdown_number_color || '',
+    countdown_label_color: sc.countdown_label_color || '',
+    navbar_logo_color: sc.navbar_logo_color || '',
+    footer_quote_color: sc.footer_quote_color || '',
+  });
 
   const handleSubmit = async (values) => {
     setSaving(true);
     onSave({
       ...values,
       wedding_date: values.wedding_date ? values.wedding_date.format('YYYY-MM-DDTHH:mm:ss') : '',
-      text_color: textColor,
-      heading_color: headingColor,
+      section_colors: { ...sc, ...colors },
     });
     setSaving(false);
   };
@@ -44,6 +61,16 @@ export default function GeneralSection({ config, onSave }) {
             <Input placeholder="如：李四" />
           </Form.Item>
         </Space.Compact>
+        <ColorInput
+          label="新郎姓名颜色"
+          value={colors.groom_name_color}
+          onChange={(v) => setColors(prev => ({ ...prev, groom_name_color: v }))}
+        />
+        <ColorInput
+          label="新娘姓名颜色"
+          value={colors.bride_name_color}
+          onChange={(v) => setColors(prev => ({ ...prev, bride_name_color: v }))}
+        />
       </Card>
 
       <Card title="婚礼日期" style={{ marginBottom: 16 }}>
@@ -58,50 +85,40 @@ export default function GeneralSection({ config, onSave }) {
         <Form.Item name="wedding_date_display" label="日期显示文案">
           <Input placeholder="如：2026年10月1日 · 星期四" />
         </Form.Item>
+        <ColorInput
+          label="日期文案颜色"
+          value={colors.date_display_color}
+          onChange={(v) => setColors(prev => ({ ...prev, date_display_color: v }))}
+        />
+        <ColorInput
+          label="倒计时数字颜色"
+          value={colors.countdown_number_color}
+          onChange={(v) => setColors(prev => ({ ...prev, countdown_number_color: v }))}
+        />
+        <ColorInput
+          label="倒计时标签颜色"
+          value={colors.countdown_label_color}
+          onChange={(v) => setColors(prev => ({ ...prev, countdown_label_color: v }))}
+        />
       </Card>
 
       <Card title="界面文案" style={{ marginBottom: 16 }}>
         <Form.Item name="navbar_logo" label="导航栏标题">
           <Input placeholder="如：我们结婚啦" />
         </Form.Item>
-        <Form.Item name="footer_quote" label="页脚寄语">
+        <ColorInput
+          label="导航栏标题颜色"
+          value={colors.navbar_logo_color}
+          onChange={(v) => setColors(prev => ({ ...prev, navbar_logo_color: v }))}
+        />
+        <Form.Item name="footer_quote" label="页脚寄语" style={{ marginTop: 12 }}>
           <Input placeholder="如：执子之手，与子偕老" />
         </Form.Item>
-      </Card>
-
-      <Card title="文字颜色（全局默认）" style={{ marginBottom: 16 }}>
-        <Space direction="vertical" style={{ width: '100%' }} size="large">
-          <div>
-            <p style={{ marginBottom: 8 }}>正文颜色（深色背景建议设为浅色）</p>
-            <Space>
-              <ColorPicker
-                value={textColor || undefined}
-                onChange={(color) => setTextColor(color?.toHexString?.() || '')}
-                showText
-                format="hex"
-                disabledAlpha
-              />
-              {textColor && (
-                <Button size="small" type="link" onClick={() => setTextColor('')}>清除</Button>
-              )}
-            </Space>
-          </div>
-          <div>
-            <p style={{ marginBottom: 8 }}>标题颜色（可不同于正文）</p>
-            <Space>
-              <ColorPicker
-                value={headingColor || undefined}
-                onChange={(color) => setHeadingColor(color?.toHexString?.() || '')}
-                showText
-                format="hex"
-                disabledAlpha
-              />
-              {headingColor && (
-                <Button size="small" type="link" onClick={() => setHeadingColor('')}>清除</Button>
-              )}
-            </Space>
-          </div>
-        </Space>
+        <ColorInput
+          label="页脚寄语颜色"
+          value={colors.footer_quote_color}
+          onChange={(v) => setColors(prev => ({ ...prev, footer_quote_color: v }))}
+        />
       </Card>
 
       <Card title="图片显示模式" style={{ marginBottom: 16 }}>
